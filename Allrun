@@ -1,0 +1,42 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Import auxiliary functions required to run OpenFOAM from batch scripts
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+if [ "$1" != "" ]
+    then airfoil=$1
+else
+    airfoil="0012"
+fi
+
+if [ "$2" != "" ]
+    then alpha=$2
+else
+    alpha=0
+fi
+
+if [ "$3" != "" ]
+  then mach=$3
+else
+  mach=0.3
+fi
+
+parallel=False
+
+# Generate blockMeshDict file
+python scripts/generateBlockMeshDict.py $airfoil $alpha $mach
+
+# Run blockMeshDict to generate mesh
+runApplication blockMesh
+
+# # Run simulation serial or parallel
+# if [ $parallel = true ]
+#     then
+#     runApplication decomposePar
+#     nProc=$(getNumberOfProcessors)
+#     runParallel rhoSimpleFoam $nProc
+#     runApplication reconstructPar
+# else
+#     runApplication rhoSimpleFoam
+# fi

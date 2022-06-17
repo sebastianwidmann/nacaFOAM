@@ -1,0 +1,9 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # run from this directory
+
+# Import auxiliary functions required to run OpenFOAM from batch scripts
+. $WM_PROJECT_DIR/bin/tools/CleanFunctions
+
+rm -rf 0 > /dev/null 2>&1
+
+cleanCase
