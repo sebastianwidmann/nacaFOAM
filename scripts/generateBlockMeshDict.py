@@ -494,7 +494,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate blockMeshDict File')
     parser.add_argument('airfoil', type=str, help='NACA airfoil digits')
     parser.add_argument('aoa', type=float, help='Angle of attack [deg]')
-    # parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
     args = parser.parse_args()
 
     # error handling for incorrect parsing of NACA airfoil or AoA
@@ -502,7 +501,5 @@ if __name__ == '__main__':
         parser.error('Please enter a 4- or 5-digit NACA airfoil.')
     if np.deg2rad(args.aoa) <= -np.pi / 2 or np.deg2rad(args.aoa) >= np.pi / 2:
         parser.error('Please enter an angle of attack between ({}, {}) degree.'.format(-90, 90))
-    # if args.mach < 0:
-    #     parser.error('Please enter a positive Mach number.')
 
     generateBlockMeshDict(args.airfoil, args.aoa)
