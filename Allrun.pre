@@ -1,0 +1,39 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+if [ "$1" != "" ]
+    then airfoil=$1
+else
+    echo Missing airfoil argument!
+fi
+
+if [ "$2" != "" ]
+    then alpha=$2
+else
+    echo Missing angle of attack argument!
+fi
+
+if [ "$3" != "" ]
+  then mach=$3
+else
+  echo Missing mach number argument!
+fi
+
+# Generate blockMeshDict file
+python scripts/generateBlockMeshDict.py $airfoil $alpha
+
+# Run blockMeshDict to generate mesh
+runApplication blockMesh
+
+# Generate initial conditions of simulation
+python scripts/generateZeroDirectoryFiles.py $mach
+
+restore0Dir
+
+#runApplication transformPoints -scale "(1 0 1)"
+#
+#runApplication extrudeMesh
+
+#------------------------------------------------------------------------------
