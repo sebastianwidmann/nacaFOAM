@@ -18,13 +18,7 @@ velocity u. Initial condition files written into the "/0.orig" directory.
 import numpy as np
 import argparse
 
-# Define global constants for air
-R = 287.058  # [J*kg^-1*K^-1] Specific gas constant for dry air
-gamma = 1.4  # [-] Heat capacity ratio
-
-# Define ICAO standard atmosphere properties
-p0 = 101325  # [Pa] Total pressure
-T0 = 288.15  # [K] Total temperature
+from flowProperties import *
 
 
 class generateInitialConditions(object):
@@ -59,19 +53,16 @@ class generateInitialConditions(object):
         self.writeToFile_Velocity()
 
     def calculatePressure(self):
-        self.p = p0 / np.power(1 + 0.5 * (gamma - 1) * self.mach ** 2, - gamma / (gamma - 1))
+        self.p = calculateStaticPressure(self.mach)
 
     def calculateTemperature(self):
-        self.T = T0 / (1 + 0.5 * (gamma - 1) * self.mach ** 2)
+        self.T = calculateStaticTemperature(self.mach)
 
     def calculateVelocity(self):
-        a = np.sqrt(gamma * R * self.T)  # [m*s^-1] Speed of sound
-        self.u = self.mach * a  # [m*s^-1] Freestream velocity
+        self.u = self.mach * calculateSpeedofSound(self.T)  # [m*s^-1] Freestream velocity
 
     def calculateTurbulentKineticEnergy(self):
         self.k = 1.5 * np.power(self.I * np.absolute(self.u), 2)
-
-        print(np.absolute(self.u))
 
     def calculateSpecificDissipationRate(self):
         self.omega = np.power(self.k, 0.5) / (np.power(self.C_mu, 0.25) * self.L)
