@@ -21,19 +21,16 @@ else
   echo Missing mach number argument!
 fi
 
+# Generate initial conditions of simulation
+python scripts/generateZeroDirectoryFiles.py $mach
+
 # Generate blockMeshDict file
-python scripts/generateBlockMeshDict.py $airfoil $alpha
+python scripts/generateBlockMeshDict.py $airfoil $alpha $mach
 
 # Run blockMeshDict to generate mesh
 runApplication blockMesh
 
-# Generate initial conditions of simulation
-python scripts/generateZeroDirectoryFiles.py $mach
-
+# Generate "0" directory from template "/0.orig"
 restore0Dir
-
-#runApplication transformPoints -scale "(1 0 1)"
-#
-#runApplication extrudeMesh
 
 #------------------------------------------------------------------------------
