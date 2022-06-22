@@ -15,30 +15,40 @@ given angle of attack. blockMeshDict written into the "/system" directory
 
 import argparse
 import numpy as np
+from math import ceil
 import matplotlib.pyplot as plt
+
+from flowProperties import *
 
 
 class generateBlockMeshDict(object):
-    def __init__(self, airfoil, angle):
+    def __init__(self, airfoil, angle, mach):
         self.foil = airfoil  # string used for creating Wavefront object files
         self.airfoil = [int(i) for i in airfoil]
-        self.nPoints = 400
-        self.span = 1
-        self.chord = 1
         self.aoa = angle
         self.alpha = np.deg2rad(angle)
+        self.mach = mach
 
+        # Airfoil parameter
+        self.nPoints = 400
         self.points = np.zeros((2 * self.nPoints, 2))
+        self.chord = 1
+        self.m = self.p = self.q = self.t = None
+        self.xLead = self.xTrail = self.xUpper = self.xLower = None
+        self.xLead = self.zTrail = self.zUpper = self.zLower = None
+        self.spline47 = self.spline75 = self.spline48 = self.spline85 = None
 
-        self.xLead = None
-        self.zLead = None
-        self.xTrail = None
-        self.zTrail = None
-        self.xUpper = None
-        self.zUpper = None
-        self.xLower = None
-        self.zLower = None
+        # Mesh parameter
+        self.xMin = self.xMax = None
+        self.zMin = self.zMax = None
+        self.yMin = self.yMax = None
+        self.xCellsB0 = self.xCellsB1 = self.xCellsB2 = None
+        self.xCellsB3 = self.xCellsB4 = self.xCellsB5 = None
+        self.xGradingB0 = self.xGradingB1 = self.xGradingB2 = None
+        self.xGradingB3 = self.xGradingB4 = self.xGradingB5 = None
+        self.zCells = self.zGrading = None
 
+    def generateAirfoil(self):
         if len(self.airfoil) == 4:
             self.m = 0.01 * self.airfoil[0]
             self.p = 0.1 * self.airfoil[1]
@@ -49,34 +59,6 @@ class generateBlockMeshDict(object):
             self.q = self.airfoil[2]
             self.t = 0.01 * (10 * self.airfoil[3] + self.airfoil[4])
 
-        # Domain and mesh parameter
-        self.xMin = -4
-        self.xMax = 4
-        self.zMin = -2
-        self.zMax = 2
-        self.yMin = -0.1
-        self.yMax = 0.1
-
-        self.zCells = 80  # aerofoil to far field
-        self.xUCells = 30  # upstream
-        self.xMCells = 30  # middle
-        self.xDCells = 40  # downstream
-
-        self.zGrading = 40  # aerofoil to far field
-        self.xUGrading = 5  # towards centre upstream
-        self.leadGrading = 0.2  # towards leading edge
-        self.xDGrading = 10  # downstream
-
-        self.spline47 = None
-        self.spline75 = None
-        self.spline48 = None
-        self.spline85 = None
-
-        # Run class methods to generate Wavefront object file and blockMeshDict
-        self.generatePoints()
-        self.writeToFile()
-
-    def generatePoints(self):
         beta = np.linspace(0, np.pi, self.nPoints)
         x = 0.5 * (1 - np.cos(beta))
 
@@ -94,7 +76,7 @@ class generateBlockMeshDict(object):
         if len(self.airfoil) == 4:
             # Calculate half thickness (centerline to surface)
             z_t = 5 * self.t * (
-                        a0 * np.sqrt(x) + a1 * x + a2 * np.power(x, 2) + a3 * np.power(x, 3) + a4 * np.power(x, 4))
+                    a0 * np.sqrt(x) + a1 * x + a2 * np.power(x, 2) + a3 * np.power(x, 3) + a4 * np.power(x, 4))
 
             # Calculate mean camber line and gradient of mean camber line
             # if-condition for symmetrical, else-condition for cambered airfoils
@@ -110,7 +92,7 @@ class generateBlockMeshDict(object):
         elif len(self.airfoil) == 5:
             # Calculate half thickness (centerline to surface)
             z_t = 5 * self.t * (
-                        a0 * np.sqrt(x) + a1 * x + a2 * np.power(x, 2) + a3 * np.power(x, 3) + a4 * np.power(x, 4))
+                    a0 * np.sqrt(x) + a1 * x + a2 * np.power(x, 2) + a3 * np.power(x, 3) + a4 * np.power(x, 4))
 
             # Values for constants r, k1, k2/k1
             digits = np.array([10, 20, 30, 40, 50, 21, 31, 41, 51])
@@ -152,14 +134,11 @@ class generateBlockMeshDict(object):
 
         self.points[:, 0], self.points[:, 1] = vertexX.transpose(), vertexZ.transpose()
 
-        # Translate aerodynamic centre (0.25c) to coordinate origin for rotation
+        # # Translate aerodynamic centre (0.25c) to coordinate origin for rotation
         self.points[:, 0] -= 0.25 * self.chord
         rotationMatrix = np.array([[np.cos(self.alpha), np.sin(self.alpha)], [-np.sin(self.alpha), np.cos(self.alpha)]])
 
         self.points = np.einsum('ij, kj -> ki', rotationMatrix, self.points)
-
-        # Translate airfoil back for blockMesh to run correctly
-        self.points[:, 0] += 0.25 * self.chord
 
         # Access values of leading edge, trailing edge,
         # upper and lower points of max. thickness
@@ -183,6 +162,94 @@ class generateBlockMeshDict(object):
         self.spline48 = self.points[0:idz_max, ]
         self.spline85 = self.points[idz_max:self.nPoints, ]
 
+    def setDomainSize(self, xMin=-20, xMax=40, zMin=-20, zMax=20):
+        # Domain size parameter
+        self.xMin = xMin
+        self.xMax = xMax
+        self.zMin = zMin
+        self.zMax = zMax
+        self.yMin = -0.1
+        self.yMax = 0.1
+
+    def calculateMinimumWallHeight(self):
+        '''
+            Calculate minimum cell height above airfoil to achieve wall y+ < 1
+        '''
+        yplus = 1
+
+        p = calculateStaticPressure(self.mach)
+        T = calculateStaticTemperature(self.mach)
+        rho = calculateStaticDensity(p, T)
+        u = self.mach * calculateSpeedofSound(T)
+        Re = rho * u * self.chord / mu  # [-] Freestream Reynolds number
+        cf = np.power(2 * np.log10(Re) - 0.65, -2.3)  # [-] Skin friction coefficient based on Schlichting
+        Tau_w = 0.5 * cf * rho * u ** 2  # [Pa] Wall shear stress
+        u_star = np.sqrt(Tau_w / rho)  # [m*s^-1] Friction velocity
+        return yplus * mu / (rho * u_star)  # First layer thickness in z-direction
+
+    def calculateNumberOfCells(self, cRatio, cHeight, Height):
+        if cRatio == 1:
+            return ceil(Height / cHeight)
+        else:
+            return ceil((np.log(1 - Height / cHeight * (1 - cRatio))) / np.log(cRatio))
+
+    def calculateExpansionRatio(self, cRatio, nCells):
+        return np.power(cRatio, nCells - 1)
+
+    def calculateMaximumCellHeight(self, cHeight, ratio):
+        return ratio * cHeight
+
+    def setMeshSize(self):
+        cRatio = 1.05  # [-] Cell-to-cell expansion ratio
+
+        # Mesh parameter from airfoil walls to inlet in radial direction
+        self.zCells = self.calculateNumberOfCells(cRatio, self.calculateMinimumWallHeight(), self.zMax)
+        self.zGrading = self.calculateExpansionRatio(cRatio, self.zCells)
+
+        # Mesh parameter from airfoil walls to inlet in azimuth direction for blocks 0, 3
+        xACells = 60  # Total cells along inlet arc
+        self.xCellsB3 = round(xACells * ((0.5 * np.pi - self.alpha) / np.pi))  # upstream cells in block 3
+        self.xCellsB0 = xACells - self.xCellsB3  # upstream cells in block 1
+
+        self.xGradingB0 = 5
+        self.xGradingB3 = 5
+
+        # Mesh parameter from airfoil walls to far field in x-direction for blocks 1, 4
+        self.xCellsB1 = 50
+        self.xCellsB4 = 30
+
+        self.xGradingB1 = 1
+        self.xGradingB4 = 1
+
+        # Mesh parameter from trailing edge to outlet in x-direction for blocks 2, 6
+        self.xCellsB2 = 100
+        self.xCellsB5 = self.xCellsB2
+
+        self.xGradingB2 = 10
+        self.xGradingB5 = self.xGradingB2
+
+        self.zCells = 80  # aerofoil to far field
+        self.xUCells = 30  # upstream
+        self.xMCells = 30  # middle
+        self.xDCells = 40  # downstream
+
+        self.zGrading = 40  # aerofoil to far field
+        self.xUGrading = 5  # towards centre upstream
+        self.leadGrading = 0.2  # towards leading edge
+        self.xDGrading = 10  # downstream
+        #
+        # self.xUCells = self.calculateNumberOfCells(cRatio, 0.01,
+        #                                            np.abs(self.xMin))  # Cells between inlet and leading edge
+        # self.xUGrading = 5  # towards centre upstream
+        #
+        # self.xMCells = self.calculateNumberOfCells(1, 0.01, np.abs(
+        #     self.xTrail - self.xUpper))  # Cells between max camber and trailing edge
+        #
+        # self.xDCells = self.calculateNumberOfCells(cRatio, 0.01, self.xMax)  # Cells from trailing edge to outlet
+        # self.xDGrading = self.calculateExpansionRatio(cRatio, self.xDCells)  # downstream
+        #
+        # self.leadGrading = 5  # towards leading edge
+
     def pltShow(self):
         plt.scatter(self.points[:, 0], self.points[:, 1], s=1, color='black')
         plt.scatter(self.xLead, self.zLead, s=0.5, color='red')
@@ -191,38 +258,6 @@ class generateBlockMeshDict(object):
         plt.scatter(self.xLower, self.zLower, s=0.5, color='red')
         plt.ylim(-0.5, 0.5)
         plt.show()
-
-    def generateWavefrontObject(self):
-        f = open('constant/geometry/naca{}_{}deg.obj'.format(self.foil, self.aoa), 'w+')
-
-        f.write('o naca{}'.format(self.foil))
-        f.write('\n')
-        f.write('# points : {} \n'.format(2 * self.points.shape[0]))
-        f.write('# faces  : {} \n'.format(2 * self.points.shape[0]))
-        f.write('# zones  : {} \n'.format(1))
-        f.write('\n')
-        f.write('# <points count="{}"> \n'.format(2 * self.points.shape[0]))
-
-        for i in range(self.points.shape[0]):
-            f.write('v {} {} {} \n'.format(self.points[i][0], self.yMax, self.points[i][1]))
-            f.write('v {} {} {} \n'.format(self.points[i][0], self.yMin, self.points[i][1]))
-
-        f.write('# </points> \n')
-        f.write('\n')
-        f.write('# <faces count="{}"> \n'.format(2 * self.points.shape[0]))
-
-        for j in range(1, 2 * self.points.shape[0] - 2):
-            if j % 2 == 0:
-                continue
-            if j == (self.points.shape[0] - 1):
-                continue
-
-            f.write('f {} {} {} \n'.format(j, j + 1, j + 2))
-            f.write('f {} {} {} \n'.format(j + 1, j + 2, j + 3))
-
-        f.write('# </faces> \n')
-
-        f.close()
 
     def writeToFile(self):
         f = open('system/blockMeshDict', 'w+')
@@ -251,16 +286,23 @@ class generateBlockMeshDict(object):
         f.write('   zMax        {}; \n'.format(self.zMax))
         f.write('                                                                                   \n')
         f.write('   // Number of cells                                                              \n')
+        f.write('   xCellsB0    {}; // leading edge to xLower \n'.format(self.xCellsB0))
+        f.write('   xCellsB1    {}; // xLower to trailing edge \n'.format(self.xCellsB1))
+        f.write('   xCellsB2    {}; // trailing edge to outlet \n'.format(self.xCellsB2))
+        f.write('   xCellsB3    {}; // leading edge to xUpper \n'.format(self.xCellsB3))
+        f.write('   xCellsB4    {}; // xUpper to trailing edge \n'.format(self.xCellsB4))
+        f.write('   xCellsB5    {}; // trailing edge to outlet \n'.format(self.xCellsB5))
         f.write('   zCells      {}; // aerofoil to far field \n'.format(self.zCells))
-        f.write('   xUCells     {}; // towards centre upstream \n'.format(self.xUCells))
-        f.write('   xMCells     {}; // towards leading edge \n'.format(self.xMCells))
-        f.write('   xDCells     {}; // downstream \n'.format(self.xDCells))
         f.write('                                                                                   \n')
         f.write('   // Mesh grading                                                                 \n')
-        f.write('   zGrading    {}; // aerofoil to far field \n'.format(self.zGrading))
-        f.write('   xUGrading   {}; // towards centre upstream \n'.format(self.xUGrading))
-        f.write('   leadGrading {}; // towards leading edge \n'.format(self.leadGrading))
-        f.write('   xDGrading   {}; // downstream \n'.format(self.xDGrading))
+        f.write('   xGradingB0  {}; // from 0 to 3 \n'.format(self.xGradingB0))
+        f.write('   xGradingB1  {}; // from 0 to 1 \n'.format(self.xGradingB1))
+        f.write('   xGradingB2  {}; // from 1 to 2 \n'.format(self.xGradingB2))
+        f.write('   xGradingB3  {}; // from 9 to 3 \n'.format(self.xGradingB3))
+        f.write('   xGradingB4  {}; // from 9 to 10 \n'.format(self.xGradingB4))
+        f.write('   xGradingB5  {}; // from 10 to 11 \n'.format(self.xGradingB5))
+        f.write('   zGrading    {}; // from airfoil to far field \n'.format(self.zGrading))
+        f.write('   leadGrading {}; // from xUpper/xLower to LE \n'.format(self.leadGrading))
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
         f.write('aerofoil                                                                           \n')
@@ -273,6 +315,7 @@ class generateBlockMeshDict(object):
         f.write('   zUpper      {}; \n'.format(self.zUpper))
         f.write('   xLower      {}; \n'.format(self.xLower))
         f.write('   zLower      {}; \n'.format(self.zLower))
+        f.write('   zInlet      {}; \n'.format(np.abs(self.xMin) * np.tan(self.alpha)))
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
         f.write('geometry                                                                           \n')
@@ -295,7 +338,7 @@ class generateBlockMeshDict(object):
         f.write('           ($aerofoil.xTrail   -0.1 $domain.zMin)                                  \n')
         f.write('           ($domain.xMax       -0.1 $domain.zMin)                                  \n')
         f.write('                                                                                   \n')
-        f.write('   project ($domain.xMin       -0.1 $aerofoil.zLead)   (cylinder)                  \n')
+        f.write('   project ($domain.xMin       -0.1 $aerofoil.zInlet)   (cylinder)                 \n')
         f.write('           ($aerofoil.xLead    -0.1 $aerofoil.zLead)                               \n')
         f.write('           ($aerofoil.xTrail   -0.1 $aerofoil.zTrail)                              \n')
         f.write('           ($domain.xMax       -0.1 $aerofoil.zTrail)                              \n')
@@ -311,7 +354,7 @@ class generateBlockMeshDict(object):
         f.write('           ($aerofoil.xTrail   0.1 $domain.zMin)                                   \n')
         f.write('           ($domain.xMax       0.1 $domain.zMin)                                   \n')
         f.write('                                                                                   \n')
-        f.write('   project ($domain.xMin       0.1 $aerofoil.zLead)    (cylinder)                  \n')
+        f.write('   project ($domain.xMin       0.1 $aerofoil.zInlet)    (cylinder)                 \n')
         f.write('           ($aerofoil.xLead    0.1 $aerofoil.zLead)                                \n')
         f.write('           ($aerofoil.xTrail   0.1 $aerofoil.zTrail)                               \n')
         f.write('           ($domain.xMax       0.1 $aerofoil.zTrail)                               \n')
@@ -327,38 +370,38 @@ class generateBlockMeshDict(object):
         f.write('blocks                                                                             \n')
         f.write('(                                                                                  \n')
         f.write('   hex (7 4 16 19 0 3 15 12)                                                       \n')
-        f.write('   ($:domain.xUCells 1 $:domain.zCells)                                            \n')
+        f.write('   ($:domain.xCellsB0 1 $:domain.zCells)                                           \n')
         f.write('   edgeGrading                                                                     \n')
         f.write('   (                                                                               \n')
-        f.write('       $:domain.leadGrading $:domain.leadGrading $:domain.xUGrading $:domain.xUGrading \n')
+        f.write('       $:domain.leadGrading $:domain.leadGrading $:domain.xGradingB0 $:domain.xGradingB0 \n')
         f.write('       1 1 1 1                                                                     \n')
         f.write('       $:domain.zGrading $:domain.zGrading $:domain.zGrading $:domain.zGrading     \n')
         f.write('   )                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   hex (5 7 19 17 1 0 12 13)                                                       \n')
-        f.write('   ($:domain.xMCells 1 $:domain.zCells)                                            \n')
-        f.write('   simpleGrading (1 1 $:domain.zGrading)                                           \n')
+        f.write('   ($:domain.xCellsB1 1 $:domain.zCells)                                           \n')
+        f.write('   simpleGrading ($:domain.xGradingB1 1 $:domain.zGrading)                         \n')
         f.write('                                                                                   \n')
         f.write('   hex (17 18 6 5 13 14 2 1)                                                       \n')
-        f.write('   ($:domain.xDCells 1 $:domain.zCells)                                            \n')
-        f.write('   simpleGrading ($:domain.xDGrading 1 $:domain.zGrading)                          \n')
+        f.write('   ($:domain.xCellsB2 1 $:domain.zCells)                                           \n')
+        f.write('   simpleGrading ($:domain.xGradingB2 1 $:domain.zGrading)                         \n')
         f.write('                                                                                   \n')
         f.write('   hex (20 16 4 8 21 15 3 9)                                                       \n')
-        f.write('   ($:domain.xUCells 1 $:domain.zCells)                                            \n')
+        f.write('   ($:domain.xCellsB3 1 $:domain.zCells)                                           \n')
         f.write('   edgeGrading                                                                     \n')
         f.write('   (                                                                               \n')
-        f.write('       $:domain.leadGrading $:domain.leadGrading $:domain.xUGrading $:domain.xUGrading \n')
+        f.write('       $:domain.leadGrading $:domain.leadGrading $:domain.xGradingB3 $:domain.xGradingB3 \n')
         f.write('       1 1 1 1                                                                     \n')
         f.write('       $:domain.zGrading $:domain.zGrading $:domain.zGrading $:domain.zGrading     \n')
         f.write('   )                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   hex (17 20 8 5 22 21 9 10)                                                      \n')
-        f.write('   ($:domain.xMCells 1 $:domain.zCells)                                            \n')
-        f.write('   simpleGrading (1 1 $:domain.zGrading)                                           \n')
+        f.write('   ($:domain.xCellsB4 1 $:domain.zCells)                                           \n')
+        f.write('   simpleGrading ($:domain.xGradingB4 1 $:domain.zGrading)                         \n')
         f.write('                                                                                   \n')
         f.write('   hex (5 6 18 17 10 11 23 22)                                                     \n')
-        f.write('   ($:domain.xDCells 1 $:domain.zCells)                                            \n')
-        f.write('   simpleGrading ($:domain.xDGrading 1 $:domain.zGrading)                          \n')
+        f.write('   ($:domain.xCellsB5 1 $:domain.zCells)                                           \n')
+        f.write('   simpleGrading ($:domain.xGradingB5 1 $:domain.zGrading)                         \n')
         f.write(');                                                                                 \n')
         f.write('                                                                                   \n')
         f.write('edges                                                                              \n')
@@ -494,6 +537,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate blockMeshDict File')
     parser.add_argument('airfoil', type=str, help='NACA airfoil digits')
     parser.add_argument('aoa', type=float, help='Angle of attack [deg]')
+    parser.add_argument('mach', type=float, help='Mach number [-]')
     args = parser.parse_args()
 
     # error handling for incorrect parsing of NACA airfoil or AoA
@@ -502,4 +546,10 @@ if __name__ == '__main__':
     if np.deg2rad(args.aoa) <= -np.pi / 2 or np.deg2rad(args.aoa) >= np.pi / 2:
         parser.error('Please enter an angle of attack between ({}, {}) degree.'.format(-90, 90))
 
-    generateBlockMeshDict(args.airfoil, args.aoa)
+    blockMesh = generateBlockMeshDict(args.airfoil, args.aoa, args.mach)
+
+    blockMesh.generateAirfoil()
+    blockMesh.setDomainSize()
+    blockMesh.setMeshSize()
+
+    blockMesh.writeToFile()
