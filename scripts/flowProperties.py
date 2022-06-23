@@ -16,7 +16,7 @@ def calculateStaticTemperature(M):
 
 
 def calculateStaticPressure(M):
-    return p0 / (1 + 0.5 * (gamma - 1) * M ** 2) ** (-gamma / (gamma - 1))
+    return p0 * (1 + 0.5 * (gamma - 1) * M ** 2) ** (-gamma / (gamma - 1))
 
 
 def calculateStaticDensity(p, T):
