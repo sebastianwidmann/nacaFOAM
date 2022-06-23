@@ -35,14 +35,6 @@ class generateInitialConditions(object):
         self.C_mu = 0.09  # [-] Constant related to k-omega SST model
         self.L = 1  # [m] Reference length
 
-        self.calculatePressure()
-        self.calculateTemperature()
-        self.calculateVelocity()
-        self.calculateTurbulentKineticEnergy()
-        self.calculateSpecificDissipationRate()
-
-        self.writeToFile()
-
     def writeToFile(self):
         self.writeToFile_KinematicEddyViscosity()
         self.writeToFile_Pressure()
@@ -385,4 +377,12 @@ if __name__ == '__main__':
     parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
     args = parser.parse_args()
 
-    generateInitialConditions(args.mach)
+    zeroDir = generateInitialConditions(args.mach)
+
+    zeroDir.calculatePressure()
+    zeroDir.calculateTemperature()
+    zeroDir.calculateVelocity()
+    zeroDir.calculateTurbulentKineticEnergy()
+    zeroDir.calculateSpecificDissipationRate()
+
+    zeroDir.writeToFile()
