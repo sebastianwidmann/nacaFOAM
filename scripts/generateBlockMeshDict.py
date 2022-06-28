@@ -15,6 +15,7 @@ given angle of attack. blockMeshDict written into the "/system" directory
 
 import argparse
 import numpy as np
+from scipy.optimize import newton
 from math import ceil
 import matplotlib.pyplot as plt
 
@@ -34,18 +35,21 @@ class generateBlockMeshDict(object):
         self.points = np.zeros((2 * self.nPoints, 2))
         self.chord = 1
         self.m = self.p = self.q = self.t = None
+
         self.xLead = self.xTrail = self.xUpper = self.xLower = None
-        self.xLead = self.zTrail = self.zUpper = self.zLower = None
+        self.zLead = self.zTrail = self.zUpper = self.zLower = None
         self.spline47 = self.spline75 = self.spline48 = self.spline85 = None
 
         # Mesh parameter
         self.xMin = self.xMax = None
         self.zMin = self.zMax = None
         self.yMin = self.yMax = None
+
         self.xCellsB0 = self.xCellsB1 = self.xCellsB2 = None
         self.xCellsB3 = self.xCellsB4 = self.xCellsB5 = None
-        self.xGradingB0 = self.xGradingB1 = self.xGradingB2 = None
-        self.xGradingB3 = self.xGradingB4 = self.xGradingB5 = None
+
+        self.xGrading74 = self.xGrading84 = self.xGrading03 = self.xGrading93 = None
+        self.xGradingB1 = self.xGradingB2 = self.xGradingB4 = self.xGradingB5 = None
         self.zCells = self.zGrading = None
 
     def generateAirfoil(self):
@@ -142,13 +146,11 @@ class generateBlockMeshDict(object):
 
         # Access values of leading edge, trailing edge,
         # upper and lower points of max. thickness
-        idx_min = np.argmin(self.points[:, 0])
-        self.xLead = self.points[idx_min][0]
-        self.zLead = self.points[idx_min][1]
+        self.xLead = self.points[0][0]
+        self.zLead = self.points[0][1]
 
-        idx_max = np.argmax(self.points[:, 0])
-        self.xTrail = self.points[idx_max][0]
-        self.zTrail = self.points[idx_max][1]
+        self.xTrail = self.points[-1][0]
+        self.zTrail = self.points[-1][1]
 
         idz_max = np.argmax(z_t)
         self.xUpper = self.points[idz_max][0]
@@ -157,12 +159,12 @@ class generateBlockMeshDict(object):
         self.zLower = self.points[idz_max + self.nPoints][1]
 
         # Create point subsets for splines within the different blocks
-        self.spline47 = self.points[self.nPoints:idz_max + self.nPoints, ]
+        self.spline47 = self.points[self.nPoints:idz_max + self.nPoints + 1, ]
         self.spline75 = self.points[idz_max + self.nPoints:, ]
-        self.spline48 = self.points[0:idz_max, ]
+        self.spline48 = self.points[0:idz_max + 1, ]
         self.spline85 = self.points[idz_max:self.nPoints, ]
 
-    def setDomainSize(self, xMin=-20, xMax=40, zMin=-20, zMax=20):
+    def setDomainSize(self, xMin=-15, xMax=30, zMin=-15, zMax=15):
         # Domain size parameter
         self.xMin = xMin
         self.xMax = xMax
@@ -172,90 +174,111 @@ class generateBlockMeshDict(object):
         self.yMax = 0.1
 
     def calculateMinimumWallHeight(self):
-        '''
-            Calculate minimum cell height above airfoil to achieve wall y+ < 1
-        '''
-        yplus = 1
+        """
+        Returns
+        -------
+        Minimum cell height in boundary layer
+        """
+        yplus = 0.99
 
         p = calculateStaticPressure(self.mach)
         T = calculateStaticTemperature(self.mach)
         rho = calculateStaticDensity(p, T)
         u = self.mach * calculateSpeedofSound(T)
-        Re = rho * u * self.chord / mu  # [-] Freestream Reynolds number
+        Re = rho * u * self.chord / calculateDynamicViscosity(T)  # [-] Freestream Reynolds number
         cf = np.power(2 * np.log10(Re) - 0.65, -2.3)  # [-] Skin friction coefficient based on Schlichting
         Tau_w = 0.5 * cf * rho * u ** 2  # [Pa] Wall shear stress
         u_star = np.sqrt(Tau_w / rho)  # [m*s^-1] Friction velocity
-        return yplus * mu / (rho * u_star)  # First layer thickness in z-direction
+        return yplus * mu / (rho * u_star)
 
-    def calculateNumberOfCells(self, cRatio, cHeight, Height):
-        if cRatio == 1:
-            return ceil(Height / cHeight)
-        else:
-            return ceil((np.log(1 - Height / cHeight * (1 - cRatio))) / np.log(cRatio))
+    def calculateExpansionRatio(self, deltaS, deltaE):
+        return deltaE / deltaS
 
-    def calculateExpansionRatio(self, cRatio, nCells):
+    def calculateExpansionRatio2(self, nCells, cRatio):
         return np.power(cRatio, nCells - 1)
 
-    def calculateMaximumCellHeight(self, cHeight, ratio):
-        return ratio * cHeight
+    def calculateCellExpansionRatio(self, ratio, nCells):
+        return np.power(ratio, 1 / (nCells - 1))
+
+    def calculateNumberOfCells(self, ratio, length, deltaS):
+        """
+        Parameters
+        ----------
+        ratio: total expansion ratio
+        length: length of block edge
+        deltaS: width / height of start cell
+
+        Returns
+        -------
+        Number of cells as integer value
+        """
+
+        if ratio > 1:
+            cMin = deltaS
+        else:
+            cMin = deltaS * ratio
+
+        if abs(ratio - 1) < 1e-5:
+            return round(length / cMin)
+        else:
+            return round(newton(
+                lambda n: (1 - np.power(ratio, (n / (n - 1)))) / (1 - np.power(ratio, (1 / (n - 1)))) - length / deltaS,
+                length / cMin))
+
+    def calculateNumberOfCells2(self, cRatio, deltaS, length):
+        return ceil(np.log(1 - length / deltaS * (1 - cRatio)) / np.log(cRatio))
+
+    def calculateSplineLength(self, x):
+        length = np.sum(np.diag(np.sqrt(np.einsum('ijk, ijk -> ij', x - x.reshape(x.shape[0], 1, x.shape[1]),
+                                                  x - x.reshape(x.shape[0], 1, x.shape[1]))), k=-1))
+        return length
 
     def setMeshSize(self):
-        cRatio = 1.05  # [-] Cell-to-cell expansion ratio
+        targetCellSize = 0.01  # target cell width along airfoil
+        leadCellSize = 0.0001  # target cell size at leading edge
+        xCellRatio = 1.1  # cell expansion ratio for blocks 2, 5
 
-        # Mesh parameter from airfoil walls to inlet in radial direction
-        self.zCells = self.calculateNumberOfCells(cRatio, self.calculateMinimumWallHeight(), self.zMax)
-        self.zGrading = self.calculateExpansionRatio(cRatio, self.zCells)
+        zMinCellSize = self.calculateMinimumWallHeight()
+        zCellRatio = 1.1  # cell expansion ratio from airfoil walls to far field
 
         # Mesh parameter from airfoil walls to inlet in azimuth direction for blocks 0, 3
-        xACells = 60  # Total cells along inlet arc
-        self.xCellsB3 = round(xACells * ((0.5 * np.pi - self.alpha) / np.pi))  # upstream cells in block 3
-        self.xCellsB0 = xACells - self.xCellsB3  # upstream cells in block 1
+        dist74 = self.calculateSplineLength(self.spline47)
+        dist84 = self.calculateSplineLength(self.spline48)
 
-        self.xGradingB0 = 5
-        self.xGradingB3 = 5
+        self.xGrading74 = self.calculateExpansionRatio(targetCellSize, leadCellSize)
+        self.xGrading84 = self.xGrading74
+
+        self.xCellsB0 = self.calculateNumberOfCells(self.xGrading74, dist74, targetCellSize)
+        self.xCellsB3 = self.calculateNumberOfCells(self.xGrading84, dist84, targetCellSize)
+
+        self.xGrading03 = 1
+        self.xGrading93 = 1
 
         # Mesh parameter from airfoil walls to far field in x-direction for blocks 1, 4
-        self.xCellsB1 = 50
-        self.xCellsB4 = 30
+        dist75 = self.calculateSplineLength(self.spline75)
+        dist85 = self.calculateSplineLength(self.spline85)
 
-        self.xGradingB1 = 1
-        self.xGradingB4 = 1
+        self.xGradingB1 = self.xGradingB4 = self.calculateExpansionRatio(targetCellSize, targetCellSize)
+        self.xCellsB1 = self.calculateNumberOfCells(self.xGradingB1, dist75, targetCellSize)
+        self.xCellsB4 = self.calculateNumberOfCells(self.xGradingB4, dist85, targetCellSize)
 
-        # Mesh parameter from trailing edge to outlet in x-direction for blocks 2, 6
-        self.xCellsB2 = 100
+        # Mesh parameter from trailing edge to outlet in x-direction for blocks 2, 5
+        self.xCellsB2 = self.calculateNumberOfCells2(xCellRatio, targetCellSize, abs(self.xMax) - abs(self.xTrail))
         self.xCellsB5 = self.xCellsB2
 
-        self.xGradingB2 = 10
+        self.xGradingB2 = self.calculateExpansionRatio2(self.xCellsB2, xCellRatio)
         self.xGradingB5 = self.xGradingB2
 
-        self.zCells = 80  # aerofoil to far field
-        self.xUCells = 30  # upstream
-        self.xMCells = 30  # middle
-        self.xDCells = 40  # downstream
-
-        self.zGrading = 40  # aerofoil to far field
-        self.xUGrading = 5  # towards centre upstream
-        self.leadGrading = 0.2  # towards leading edge
-        self.xDGrading = 10  # downstream
-        #
-        # self.xUCells = self.calculateNumberOfCells(cRatio, 0.01,
-        #                                            np.abs(self.xMin))  # Cells between inlet and leading edge
-        # self.xUGrading = 5  # towards centre upstream
-        #
-        # self.xMCells = self.calculateNumberOfCells(1, 0.01, np.abs(
-        #     self.xTrail - self.xUpper))  # Cells between max camber and trailing edge
-        #
-        # self.xDCells = self.calculateNumberOfCells(cRatio, 0.01, self.xMax)  # Cells from trailing edge to outlet
-        # self.xDGrading = self.calculateExpansionRatio(cRatio, self.xDCells)  # downstream
-        #
-        # self.leadGrading = 5  # towards leading edge
+        # Mesh parameter from airfoil walls to far field in z-direction
+        self.zCells = self.calculateNumberOfCells2(zCellRatio, zMinCellSize, self.zMax)
+        self.zGrading = self.calculateExpansionRatio2(self.zCells, zCellRatio)
 
     def pltShow(self):
         plt.scatter(self.points[:, 0], self.points[:, 1], s=1, color='black')
-        plt.scatter(self.xLead, self.zLead, s=0.5, color='red')
-        plt.scatter(self.xUpper, self.zUpper, s=0.5, color='red')
-        plt.scatter(self.xTrail, self.zTrail, s=0.5, color='red')
-        plt.scatter(self.xLower, self.zLower, s=0.5, color='red')
+        plt.scatter(self.xLead, self.zLead, s=5, color='red')
+        plt.scatter(self.xUpper, self.zUpper, s=5, color='red')
+        plt.scatter(self.xTrail, self.zTrail, s=5, color='red')
+        plt.scatter(self.xLower, self.zLower, s=5, color='red')
         plt.ylim(-0.5, 0.5)
         plt.show()
 
@@ -295,14 +318,15 @@ class generateBlockMeshDict(object):
         f.write('   zCells      {}; // aerofoil to far field \n'.format(self.zCells))
         f.write('                                                                                   \n')
         f.write('   // Mesh grading                                                                 \n')
-        f.write('   xGradingB0  {}; // from 0 to 3 \n'.format(self.xGradingB0))
-        f.write('   xGradingB1  {}; // from 0 to 1 \n'.format(self.xGradingB1))
-        f.write('   xGradingB2  {}; // from 1 to 2 \n'.format(self.xGradingB2))
-        f.write('   xGradingB3  {}; // from 9 to 3 \n'.format(self.xGradingB3))
-        f.write('   xGradingB4  {}; // from 9 to 10 \n'.format(self.xGradingB4))
-        f.write('   xGradingB5  {}; // from 10 to 11 \n'.format(self.xGradingB5))
+        f.write('   xGrading74  {}; // from 7 to 4 \n'.format(self.xGrading74))
+        f.write('   xGrading03  {}; // from 0 to 3 \n'.format(self.xGrading03))
+        f.write('   xGradingB1  {}; // from 0 to 1 & 7 to 5 \n'.format(self.xGradingB1))
+        f.write('   xGradingB2  {}; // from 1 to 2 & 5 to 6 \n'.format(self.xGradingB2))
+        f.write('   xGrading84  {}; // from 8 to 4 \n'.format(self.xGrading84))
+        f.write('   xGrading93  {}; // from 9 to 3 \n'.format(self.xGrading93))
+        f.write('   xGradingB4  {}; // from 9 to 10 & 8 to 5 \n'.format(self.xGradingB4))
+        f.write('   xGradingB5  {}; // from 10 to 11 & 5 to 6 \n'.format(self.xGradingB5))
         f.write('   zGrading    {}; // from airfoil to far field \n'.format(self.zGrading))
-        f.write('   leadGrading {}; // from xUpper/xLower to LE \n'.format(self.leadGrading))
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
         f.write('aerofoil                                                                           \n')
@@ -315,7 +339,6 @@ class generateBlockMeshDict(object):
         f.write('   zUpper      {}; \n'.format(self.zUpper))
         f.write('   xLower      {}; \n'.format(self.xLower))
         f.write('   zLower      {}; \n'.format(self.zLower))
-        f.write('   zInlet      {}; \n'.format(np.abs(self.xMin) * np.tan(self.alpha)))
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
         f.write('geometry                                                                           \n')
@@ -338,7 +361,7 @@ class generateBlockMeshDict(object):
         f.write('           ($aerofoil.xTrail   -0.1 $domain.zMin)                                  \n')
         f.write('           ($domain.xMax       -0.1 $domain.zMin)                                  \n')
         f.write('                                                                                   \n')
-        f.write('   project ($domain.xMin       -0.1 $aerofoil.zInlet)   (cylinder)                 \n')
+        f.write('   project ($domain.xMin       -0.1 $aerofoil.zLead)   (cylinder)                  \n')
         f.write('           ($aerofoil.xLead    -0.1 $aerofoil.zLead)                               \n')
         f.write('           ($aerofoil.xTrail   -0.1 $aerofoil.zTrail)                              \n')
         f.write('           ($domain.xMax       -0.1 $aerofoil.zTrail)                              \n')
@@ -354,7 +377,7 @@ class generateBlockMeshDict(object):
         f.write('           ($aerofoil.xTrail   0.1 $domain.zMin)                                   \n')
         f.write('           ($domain.xMax       0.1 $domain.zMin)                                   \n')
         f.write('                                                                                   \n')
-        f.write('   project ($domain.xMin       0.1 $aerofoil.zInlet)    (cylinder)                 \n')
+        f.write('   project ($domain.xMin       0.1 $aerofoil.zLead)    (cylinder)                  \n')
         f.write('           ($aerofoil.xLead    0.1 $aerofoil.zLead)                                \n')
         f.write('           ($aerofoil.xTrail   0.1 $aerofoil.zTrail)                               \n')
         f.write('           ($domain.xMax       0.1 $aerofoil.zTrail)                               \n')
@@ -373,7 +396,7 @@ class generateBlockMeshDict(object):
         f.write('   ($:domain.xCellsB0 1 $:domain.zCells)                                           \n')
         f.write('   edgeGrading                                                                     \n')
         f.write('   (                                                                               \n')
-        f.write('       $:domain.leadGrading $:domain.leadGrading $:domain.xGradingB0 $:domain.xGradingB0 \n')
+        f.write('       $:domain.xGrading74 $:domain.xGrading74 $:domain.xGrading03 $:domain.xGrading03 \n')
         f.write('       1 1 1 1                                                                     \n')
         f.write('       $:domain.zGrading $:domain.zGrading $:domain.zGrading $:domain.zGrading     \n')
         f.write('   )                                                                               \n')
@@ -390,7 +413,7 @@ class generateBlockMeshDict(object):
         f.write('   ($:domain.xCellsB3 1 $:domain.zCells)                                           \n')
         f.write('   edgeGrading                                                                     \n')
         f.write('   (                                                                               \n')
-        f.write('       $:domain.leadGrading $:domain.leadGrading $:domain.xGradingB3 $:domain.xGradingB3 \n')
+        f.write('       $:domain.xGrading84 $:domain.xGrading84 $:domain.xGrading93 $:domain.xGrading93 \n')
         f.write('       1 1 1 1                                                                     \n')
         f.write('       $:domain.zGrading $:domain.zGrading $:domain.zGrading $:domain.zGrading     \n')
         f.write('   )                                                                               \n')
@@ -551,5 +574,5 @@ if __name__ == '__main__':
     blockMesh.generateAirfoil()
     blockMesh.setDomainSize()
     blockMesh.setMeshSize()
-
+    # blockMesh.pltShow()
     blockMesh.writeToFile()
