@@ -27,5 +27,9 @@ def calculateSpeedofSound(T):
     return sqrt(gamma * R * T)
 
 
+def calculateDynamicViscosity(T):
+    return 1.716e-5 * (T / 273.15) ** (1.5) * (273.15 + 110.4) / (T + 110.4)
+
+
 def calculatePrandtlNumber():
     return mu * cp / lamb
