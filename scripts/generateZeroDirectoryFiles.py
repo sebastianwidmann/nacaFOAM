@@ -27,7 +27,7 @@ class generateInitialConditions(object):
         self.p = None  # [Pa] Static pressure
         self.T = None  # [K] Static temperature
         self.u = None  # [m * s^-1] Freestream velocity in x-direction
-        self.mdot = None # [kg/s] Inlet mass flow rate
+        self.mdot = None  # [kg/s] Inlet mass flow rate
         self.k = None  # [m^2 * s^-2] Turbulent kinetic energy
         self.omega = None  # [s^-1] Turbulence specific dissipation rate
 
@@ -90,13 +90,14 @@ class generateInitialConditions(object):
         f.write('{                                                                                  \n')
         f.write('   "(inlet|outlet)"                                                                \n')
         f.write('   {                                                                               \n')
-        f.write('       type            calculated;                                                 \n')
-        f.write('       value           uniform 0;                                                  \n')
+        f.write('       type    calculated;                                                         \n')
+        f.write('       value   uniform 0;                                                          \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
-        f.write('       type            nutkWallFunction;                                           \n')
+        f.write('       type    nutkWallFunction;                                                   \n')
+        f.write('       value   uniform 0;                                                          \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -136,7 +137,7 @@ class generateInitialConditions(object):
         f.write('   inlet                                                                           \n')
         f.write('   {                                                                               \n')
         f.write('       type            totalPressure;                                              \n')
-        f.write('       value           uniform $ptInlet;                                           \n')
+        f.write('       p0              uniform $ptInlet;                                           \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   outlet                                                                          \n')
@@ -193,6 +194,7 @@ class generateInitialConditions(object):
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
         f.write('       type            omegaWallFunction;                                          \n')
+        f.write('       value           uniform $omegaInlet;                                        \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -239,7 +241,7 @@ class generateInitialConditions(object):
         f.write('   {                                                                               \n')
         f.write('       type            totalTemperature;                                           \n')
         f.write('       T0              uniform $T0inlet;                                           \n')
-        f.write('       gamma           {}'.format(gamma))
+        f.write('       gamma           {}; \n'.format(gamma))
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
@@ -325,13 +327,14 @@ class generateInitialConditions(object):
         f.write('{                                                                                  \n')
         f.write('   "(inlet|outlet)"                                                                \n')
         f.write('   {                                                                               \n')
-        f.write('       type            calculated;                                                 \n')
-        f.write('       value           uniform 0;                                                  \n')
+        f.write('       type    calculated;                                                         \n')
+        f.write('       value   uniform 0;                                                          \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
-        f.write('       type            alphatWallFunction;                                         \n')
+        f.write('       type    compressible::alphatWallFunction;                                   \n')
+        f.write('       value   uniform 0;                                                          \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -377,7 +380,7 @@ class generateInitialConditions(object):
         f.write('                                                                                   \n')
         f.write('   outlet                                                                          \n')
         f.write('   {                                                                               \n')
-        f.write('       type                InletOutlet;                                            \n')
+        f.write('       type                inletOutlet;                                            \n')
         f.write('       inletValue          uniform $Uinlet;                                        \n')
         f.write('       value               uniform $Uinlet;                                        \n')
         f.write('   }                                                                               \n')
@@ -406,5 +409,6 @@ if __name__ == '__main__':
     zeroDir.calculateVelocity()
     zeroDir.calculateTurbulentKineticEnergy()
     zeroDir.calculateSpecificDissipationRate()
+    zeroDir.calculateMassFlowRate()
 
     zeroDir.writeToFile()

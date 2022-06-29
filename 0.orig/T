@@ -33,7 +33,8 @@ boundaryField
    {                                                                               
        type            totalTemperature;                                           
        T0              uniform $T0inlet;                                           
-       gamma           1.4   }                                                                               
+       gamma           1.4; 
+   }                                                                               
                                                                                    
    wall                                                                            
    {                                                                               
