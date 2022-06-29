@@ -21,8 +21,6 @@ else
   echo Missing mach number argument!
 fi
 
-parallel=False
-
 # Generate "0" and "constant" directory, generate blockMeshDict
 ./Allrun.pre $airfoil $alpha $mach
 
