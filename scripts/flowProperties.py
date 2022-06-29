@@ -8,7 +8,7 @@ R = 287.058  # [J/(kg*K)] Specific gas constant for dry air
 
 mu = 1.789e-5  # [] Dynamic viscosity
 cp = 1005  # [J/(kg*K)
-lamb = 25.5 - 3  # [W/(m*K) thermal conductivity
+lamb = 25.5e-3  # [W/(m*K) thermal conductivity
 
 
 def calculateStaticTemperature(M):
