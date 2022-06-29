@@ -164,7 +164,7 @@ class generateBlockMeshDict(object):
         self.spline48 = self.points[0:idz_max + 1, ]
         self.spline85 = self.points[idz_max:self.nPoints, ]
 
-    def setDomainSize(self, xMin=-15, xMax=30, zMin=-15, zMax=15):
+    def setDomainSize(self, xMin=-10, xMax=30, zMin=-10, zMax=10):
         # Domain size parameter
         self.xMin = xMin
         self.xMax = xMax
@@ -185,7 +185,7 @@ class generateBlockMeshDict(object):
         T = calculateStaticTemperature(self.mach)
         rho = calculateStaticDensity(p, T)
         u = self.mach * calculateSpeedofSound(T)
-        Re = rho * u * self.chord / calculateDynamicViscosity(T)  # [-] Freestream Reynolds number
+        Re = rho * u * self.chord / mu  # [-] Freestream Reynolds number
         cf = np.power(2 * np.log10(Re) - 0.65, -2.3)  # [-] Skin friction coefficient based on Schlichting
         Tau_w = 0.5 * cf * rho * u ** 2  # [Pa] Wall shear stress
         u_star = np.sqrt(Tau_w / rho)  # [m*s^-1] Friction velocity
@@ -239,7 +239,7 @@ class generateBlockMeshDict(object):
         xCellRatio = 1.1  # cell expansion ratio for blocks 2, 5
 
         zMinCellSize = self.calculateMinimumWallHeight()
-        zCellRatio = 1.1  # cell expansion ratio from airfoil walls to far field
+        zCellRatio = 1.05  # cell expansion ratio from airfoil walls to far field
 
         # Mesh parameter from airfoil walls to inlet in azimuth direction for blocks 0, 3
         dist74 = self.calculateSplineLength(self.spline47)
@@ -500,7 +500,6 @@ class generateBlockMeshDict(object):
         f.write('   inlet                                                                           \n')
         f.write('   {                                                                               \n')
         f.write('       type patch;                                                                 \n')
-        f.write('       inGroups (freestream);                                                      \n')
         f.write('       faces                                                                       \n')
         f.write('       (                                                                           \n')
         f.write('           (3 0 12 15)                                                             \n')
@@ -515,7 +514,6 @@ class generateBlockMeshDict(object):
         f.write('   outlet                                                                          \n')
         f.write('   {                                                                               \n')
         f.write('       type patch;                                                                 \n')
-        f.write('       inGroups (freestream);                                                      \n')
         f.write('       faces                                                                       \n')
         f.write('       (                                                                           \n')
         f.write('           (2 6 18 14)                                                             \n')
