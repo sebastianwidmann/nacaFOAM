@@ -14,7 +14,7 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-kInlet         17.2324505625; 
+kInlet         5.727908481032045; 
                                                                                    
 dimensions     [0 2 -2 0 0 0 0];                                                   
                                                                                    
@@ -22,7 +22,7 @@ internalField  uniform $kInlet;
                                                                                    
 boundaryField                                                                      
 {                                                                                  
-   freestream                                                                      
+   "(inlet|outlet)"                                                                
    {                                                                               
        type            inletOutlet;                                                
        inletValue      uniform $kInlet;                                            
@@ -32,7 +32,6 @@ boundaryField
    wall                                                                            
    {                                                                               
        type            kqRWallFunction;                                            
-       value           uniform $kInlet;                                            
    }                                                                               
                                                                                    
    #includeEtc "caseDicts/setConstraintTypes"                                      

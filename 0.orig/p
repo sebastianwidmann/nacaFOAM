@@ -14,18 +14,25 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-pOut           104190.58459739339; 
+pOutlet              100392.53922738862; 
+ptInlet              101325; 
                                                                                    
 dimensions     [1 -1 -2 0 0 0 0];                                                  
                                                                                    
-internalField  uniform $pOut;                                                      
+internalField  uniform $pOutlet;                                                   
                                                                                    
 boundaryField                                                                      
 {                                                                                  
-   freestream                                                                      
+   inlet                                                                           
    {                                                                               
-       type            freestreamPressure;                                         
-       freestreamValue uniform $pOut;                                              
+       type            totalPressure;                                              
+       value           uniform $ptInlet;                                           
+   }                                                                               
+                                                                                   
+   outlet                                                                          
+   {                                                                               
+       type            fixedValue;                                                 
+       value           uniform $pOutlet;                                           
    }                                                                               
                                                                                    
    wall                                                                            

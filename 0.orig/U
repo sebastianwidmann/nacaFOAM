@@ -14,7 +14,8 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-Uinlet         (67.78879074006262 0 0); 
+mdotInlet      None; 
+Uinlet         (39.08250582560623 0 0); 
                                                                                    
 dimensions     [0 1 -1 0 0 0 0];                                                   
                                                                                    
@@ -22,11 +23,18 @@ internalField  uniform $Uinlet;
                                                                                    
 boundaryField                                                                      
 {                                                                                  
-   freestream                                                                      
+   inlet                                                                           
    {                                                                               
-       type            freestreamVelocity;                                         
-       freestreamValue uniform $Uinlet;                                            
-       value           uniform $Uinlet;                                            
+       type                flowRateInletVelocity;                                  
+       massFlowRate        $mdotInlet;                                             
+       rho                 rho;                                                    
+   }                                                                               
+                                                                                   
+   outlet                                                                          
+   {                                                                               
+       type                InletOutlet;                                            
+       inletValue          uniform $Uinlet;                                        
+       value               uniform $Uinlet;                                        
    }                                                                               
                                                                                    
    wall                                                                            

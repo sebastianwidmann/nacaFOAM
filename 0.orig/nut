@@ -20,7 +20,7 @@ internalField  uniform 0;
                                                                                    
 boundaryField                                                                      
 {                                                                                  
-   freestream                                                                      
+   "(inlet|outlet)"                                                                
    {                                                                               
        type            calculated;                                                 
        value           uniform 0;                                                  
@@ -29,7 +29,6 @@ boundaryField
    wall                                                                            
    {                                                                               
        type            nutkWallFunction;                                           
-       value           uniform 0;                                                  
    }                                                                               
                                                                                    
    #includeEtc "caseDicts/setConstraintTypes"                                      

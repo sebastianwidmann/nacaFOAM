@@ -14,7 +14,8 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-Tinlet         285.86309523809524; 
+Tinlet         287.3898538366022; 
+T0inlet        288.15; 
                                                                                    
 dimensions     [0 0 0 1 0 0 0];                                                    
                                                                                    
@@ -22,12 +23,17 @@ internalField  uniform $Tinlet;
                                                                                    
 boundaryField                                                                      
 {                                                                                  
-   freestream                                                                      
+   inlet                                                                           
    {                                                                               
-       type            inletOutlet;                                                
-       inletValue      uniform $Tinlet;                                            
-       value           $inletValue;                                                
+       type            fixedValue;                                                 
+       value           uniform $Tinlet;                                            
    }                                                                               
+                                                                                   
+   outlet                                                                          
+   {                                                                               
+       type            totalTemperature;                                           
+       T0              uniform $T0inlet;                                           
+       gamma           1.4   }                                                                               
                                                                                    
    wall                                                                            
    {                                                                               
