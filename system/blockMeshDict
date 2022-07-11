@@ -26,23 +26,21 @@ domain
                                                                                    
 vertices                                                                           
 (                                                                                  
-           // Block 0                                                              
-           ($domain.xMin   $domain.yMin $domain.zMin)                              
-           ($domain.xMax   $domain.yMin $domain.zMin)                              
-           ($domain.xMax   $domain.yMax $domain.zMin)                              
-           ($domain.xMin   $domain.yMax $domain.zMin)                              
+   ($domain.xMin   $domain.yMin $domain.zMin)                                      
+   ($domain.xMax   $domain.yMin $domain.zMin)                                      
+   ($domain.xMax   $domain.yMax $domain.zMin)                                      
+   ($domain.xMin   $domain.yMax $domain.zMin)                                      
                                                                                    
-           ($domain.xMin   $domain.yMin $domain.zMax)                              
-           ($domain.xMax   $domain.yMin $domain.zMax)                              
-           ($domain.xMax   $domain.yMax $domain.zMax)                              
-           ($domain.xMin   $domain.yMax $domain.zMax)                              
+   ($domain.xMin   $domain.yMin $domain.zMax)                                      
+   ($domain.xMax   $domain.yMin $domain.zMax)                                      
+   ($domain.xMax   $domain.yMax $domain.zMax)                                      
+   ($domain.xMin   $domain.yMax $domain.zMax)                                      
 );                                                                                 
                                                                                    
 blocks                                                                             
 (                                                                                  
-   // Block 0                                                                      
    hex (0 1 2 3 4 5 6 7)                                                           
-   (80 40 1) 
+   (400 200 1) 
    simpleGrading (1 1 1)                                                           
 );                                                                                 
                                                                                    
@@ -50,7 +48,7 @@ boundary
 (                                                                                  
    inlet                                                                           
    {                                                                               
-       type patch;                                                                  
+       type patch;                                                                 
        faces                                                                       
        (                                                                           
            (0 4 7 3)                                                               

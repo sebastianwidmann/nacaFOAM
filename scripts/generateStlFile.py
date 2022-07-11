@@ -7,9 +7,10 @@
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
-Class implementation to generate 2D shells of NACA airfoils for blockMesh
+Class implementation to generate 3D body of NACA airfoil for snappyHexMesh
 process. Airfoil is specified by either 4- or 5-digit code together with the
-given angle of attack. blockMeshDict written into the "/system" directory
+given angle of attack. File has type ".stl" and will be written into
+the "/constant/triSurface" directory.
 """
 # ---------------------------------------------------------------------------
 

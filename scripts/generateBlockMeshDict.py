@@ -7,8 +7,9 @@
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
-Class implementation to generate background mesh with blockMesh.
-blockMeshDict written into the "/system" directory
+Class implementation to generate background mesh with blockMesh. Background
+mesh is specified by base cell size and blockMeshDict will be written into
+the "/system" directory.
 """
 # ---------------------------------------------------------------------------
 
@@ -26,6 +27,9 @@ class generateBlockMeshDict(object):
         # Mesh parameter
         self.xCells = self.yCells = None
         self.baseCellSize = baseCellSize
+
+        self.setDomainSize()
+        self.writeToFile()
 
     def setDomainSize(self, xMin=-10, xMax=30, yMin=-10, yMax=10):
         # Domain size parameter
@@ -95,15 +99,15 @@ class generateBlockMeshDict(object):
         f.write('                                                                                   \n')
         f.write('vertices                                                                           \n')
         f.write('(                                                                                  \n')
-        f.write('           ($domain.xMin   $domain.yMin $domain.zMin)                              \n')
-        f.write('           ($domain.xMax   $domain.yMin $domain.zMin)                              \n')
-        f.write('           ($domain.xMax   $domain.yMax $domain.zMin)                              \n')
-        f.write('           ($domain.xMin   $domain.yMax $domain.zMin)                              \n')
+        f.write('   ($domain.xMin   $domain.yMin $domain.zMin)                                      \n')
+        f.write('   ($domain.xMax   $domain.yMin $domain.zMin)                                      \n')
+        f.write('   ($domain.xMax   $domain.yMax $domain.zMin)                                      \n')
+        f.write('   ($domain.xMin   $domain.yMax $domain.zMin)                                      \n')
         f.write('                                                                                   \n')
-        f.write('           ($domain.xMin   $domain.yMin $domain.zMax)                              \n')
-        f.write('           ($domain.xMax   $domain.yMin $domain.zMax)                              \n')
-        f.write('           ($domain.xMax   $domain.yMax $domain.zMax)                              \n')
-        f.write('           ($domain.xMin   $domain.yMax $domain.zMax)                              \n')
+        f.write('   ($domain.xMin   $domain.yMin $domain.zMax)                                      \n')
+        f.write('   ($domain.xMax   $domain.yMin $domain.zMax)                                      \n')
+        f.write('   ($domain.xMax   $domain.yMax $domain.zMax)                                      \n')
+        f.write('   ($domain.xMin   $domain.yMax $domain.zMax)                                      \n')
         f.write(');                                                                                 \n')
         f.write('                                                                                   \n')
         f.write('blocks                                                                             \n')
@@ -117,7 +121,7 @@ class generateBlockMeshDict(object):
         f.write('(                                                                                  \n')
         f.write('   inlet                                                                           \n')
         f.write('   {                                                                               \n')
-        f.write('       type patch;                                                                  \n')
+        f.write('       type patch;                                                                 \n')
         f.write('       faces                                                                       \n')
         f.write('       (                                                                           \n')
         f.write('           (0 4 7 3)                                                               \n')
@@ -177,10 +181,7 @@ class generateBlockMeshDict(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate blockMeshDict File')
-    parser.add_argument('cellSize', type=float, help='NACA airfoil digits')
+    parser.add_argument('cellSize', type=float, help='Background mesh cell size')
     args = parser.parse_args()
 
     blockMesh = generateBlockMeshDict(baseCellSize=args.cellSize)
-
-    blockMesh.setDomainSize()
-    blockMesh.writeToFile()
