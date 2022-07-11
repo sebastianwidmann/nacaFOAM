@@ -17,19 +17,22 @@ velocity u. Initial condition files written into the "/0.orig" directory.
 
 import numpy as np
 import argparse
-
+from math import ceil, floor
 from flowProperties import *
 
 
 class generateInitialConditions(object):
-    def __init__(self, mach):
-        self.mach = mach
+    def __init__(self):
+        self.mach = args.mach
         self.p = None  # [Pa] Static pressure
         self.T = None  # [K] Static temperature
-        self.u = None  # [m * s^-1] Freestream velocity in x-direction
-        self.mdot = None  # [kg/s] Inlet mass flow rate
-        self.k = None  # [m^2 * s^-2] Turbulent kinetic energy
-        self.omega = None  # [s^-1] Turbulence specific dissipation rate
+        self.mDot = None # [kg * s^-1] Mass flow rate
+        self.u = None  # [m * s^-1] Freestream velocity vector
+
+        self.k_inf = None  # [m^2 * s^-2] Freestream turbulent kinetic energy
+
+        self.omega_inf = None  # [s^-1] Freestream turbulence specific dissipation rate
+        self.omega_wall = None  # [s^-1] Wall turbulence specific dissipation rate
 
         # Constants
         self.I = 0.05  # [%] Turbulence intensity
@@ -52,16 +55,24 @@ class generateInitialConditions(object):
         self.T = calculateStaticTemperature(self.mach)
 
     def calculateVelocity(self):
-        self.u = self.mach * calculateSpeedofSound(self.T)  # [m*s^-1] Freestream velocity
-
-    def calculateTurbulentKineticEnergy(self):
-        self.k = 1.5 * np.power(self.I * np.absolute(self.u), 2)
-
-    def calculateSpecificDissipationRate(self):
-        self.omega = np.power(self.k, 0.5) / (np.power(self.C_mu, 0.25) * self.L)
+        u = self.mach * calculateSpeedofSound(self.T)  # [m*s^-1] Freestream velocity
+        self.u = np.array([u, 0, 0])
 
     def calculateMassFlowRate(self):
-        self.mdot = calculateStaticDensity(self.p, self.T) * self.u * 4
+        self.mDot = calculateStaticDensity(self.p, self.T) * np.linalg.norm(self.u) * (20 * 0.2)
+
+    def calculateTurbulentKineticEnergy(self):
+        kLower = 1e-5 * np.linalg.norm(self.u)**2 / calculateReynoldsNumber(calculateStaticDensity(self.p, self.T), np.linalg.norm(self.u), 40, mu)
+        kUpper = 1e-1 * np.linalg.norm(self.u)**2 / calculateReynoldsNumber(calculateStaticDensity(self.p, self.T), np.linalg.norm(self.u), 40, mu)
+
+        self.k_inf = kLower
+
+    def calculateSpecificDissipationRate(self):
+        omegaLower = ceil(np.linalg.norm(self.u) / 30)
+        omegaUpper = floor(10 * np.linalg.norm(self.u) / 30)
+
+        self.omega_inf = omegaLower
+        self.omega_wall = ceil(60 * (mu / calculateStaticDensity(self.p, self.T)) / (0.075 * 3.2112207443967394e-06**2))
 
     def writeToFile_KinematicEddyViscosity(self):
         f = open('0.orig/nut', 'w+')
@@ -82,22 +93,22 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [0 2 -1 0 0 0 0];                                                   \n')
+        f.write('dimensions             [0 2 -1 0 0 0 0];                                           \n')
         f.write('                                                                                   \n')
-        f.write('internalField  uniform 0;                                                          \n')
+        f.write('internalField          uniform 0;                                                  \n')
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   "(inlet|outlet)"                                                                \n')
         f.write('   {                                                                               \n')
-        f.write('       type    calculated;                                                         \n')
-        f.write('       value   uniform 0;                                                          \n')
+        f.write('       type            calculated;                                                 \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
-        f.write('       type    nutkWallFunction;                                                   \n')
-        f.write('       value   uniform 0;                                                          \n')
+        f.write('       type            nutkWallFunction;                                           \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -125,25 +136,21 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('pOutlet              {}; \n'.format(self.p))
-        f.write('ptInlet              {}; \n'.format(p0))
+        f.write('dimensions             [1 -1 -2 0 0 0 0];                                          \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [1 -1 -2 0 0 0 0];                                                  \n')
-        f.write('                                                                                   \n')
-        f.write('internalField  uniform $pOutlet;                                                   \n')
+        f.write('internalField          uniform {}; \n'.format(self.p))
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   inlet                                                                           \n')
         f.write('   {                                                                               \n')
-        f.write('       type            totalPressure;                                              \n')
-        f.write('       p0              uniform $ptInlet;                                           \n')
+        f.write('       type            zeroGradient;                                               \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   outlet                                                                          \n')
         f.write('   {                                                                               \n')
         f.write('       type            fixedValue;                                                 \n')
-        f.write('       value           uniform $pOutlet;                                           \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
@@ -176,25 +183,22 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('omegaInlet     {}; \n'.format(self.omega))
+        f.write('dimensions             [0 0 -1 0 0 0 0];                                           \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [0 0 -1 0 0 0 0];                                                   \n')
-        f.write('                                                                                   \n')
-        f.write('internalField  uniform $omegaInlet;                                                \n')
+        f.write('internalField          uniform {}; \n'.format(self.omega_inf))
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   "(inlet|outlet)"                                                                \n')
         f.write('   {                                                                               \n')
-        f.write('       type            inletOutlet;                                                \n')
-        f.write('       inletValue      uniform $omegaInlet;                                        \n')
-        f.write('       value           uniform $omegaInlet;                                        \n')
+        f.write('       type            fixedValue;                                                 \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
         f.write('       type            omegaWallFunction;                                          \n')
-        f.write('       value           uniform $omegaInlet;                                        \n')
+        f.write('       value           uniform {}; \n'.format(self.omega_wall))
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -222,26 +226,21 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('Tinlet         {}; \n'.format(self.T))
-        f.write('T0inlet        {}; \n'.format(T0))
+        f.write('dimensions             [0 0 0 1 0 0 0];                                            \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [0 0 0 1 0 0 0];                                                    \n')
-        f.write('                                                                                   \n')
-        f.write('internalField  uniform $Tinlet;                                                    \n')
+        f.write('internalField          uniform {}; \n'.format(self.T))
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   inlet                                                                           \n')
         f.write('   {                                                                               \n')
         f.write('       type            fixedValue;                                                 \n')
-        f.write('       value           uniform $Tinlet;                                            \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   outlet                                                                          \n')
         f.write('   {                                                                               \n')
-        f.write('       type            totalTemperature;                                           \n')
-        f.write('       T0              uniform $T0inlet;                                           \n')
-        f.write('       gamma           {}; \n'.format(gamma))
+        f.write('       type            zeroGradient;                                               \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
@@ -274,24 +273,22 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('kInlet         {}; \n'.format(self.k))
+        f.write('dimensions             [0 2 -2 0 0 0 0];                                           \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [0 2 -2 0 0 0 0];                                                   \n')
-        f.write('                                                                                   \n')
-        f.write('internalField  uniform $kInlet;                                                    \n')
+        f.write('internalField          uniform {}; \n'.format(self.k_inf))
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   "(inlet|outlet)"                                                                \n')
         f.write('   {                                                                               \n')
-        f.write('       type            inletOutlet;                                                \n')
-        f.write('       inletValue      uniform $kInlet;                                            \n')
-        f.write('       value           uniform $kInlet;                                            \n')
+        f.write('       type            fixedValue;                                                 \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
-        f.write('       type            kqRWallFunction;                                            \n')
+        f.write('       type            fixedValue;                                                 \n')
+        f.write('       value           uniform 1e-20;                                              \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -319,22 +316,22 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [1 -1 -1 0 0 0 0];                                                  \n')
+        f.write('dimensions             [1 -1 -1 0 0 0 0];                                          \n')
         f.write('                                                                                   \n')
-        f.write('internalField  uniform 0;                                                          \n')
+        f.write('internalField          uniform 0;                                                  \n')
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   "(inlet|outlet)"                                                                \n')
         f.write('   {                                                                               \n')
-        f.write('       type    calculated;                                                         \n')
-        f.write('       value   uniform 0;                                                          \n')
+        f.write('       type            calculated;                                                 \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
-        f.write('       type    compressible::alphatWallFunction;                                   \n')
-        f.write('       value   uniform 0;                                                          \n')
+        f.write('       type            compressible::alphatWallFunction;                           \n')
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   #includeEtc "caseDicts/setConstraintTypes"                                      \n')
@@ -362,28 +359,28 @@ class generateInitialConditions(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('mdotInlet      {}; \n'.format(self.mdot))
-        f.write('Uinlet         ({} 0 0); \n'.format(self.u))
+        f.write('dimensions             [0 1 -1 0 0 0 0];                                           \n')
         f.write('                                                                                   \n')
-        f.write('dimensions     [0 1 -1 0 0 0 0];                                                   \n')
-        f.write('                                                                                   \n')
-        f.write('internalField  uniform $Uinlet;                                                    \n')
+        f.write('internalField          uniform ({} {} {}); \n'.format(*self.u))
         f.write('                                                                                   \n')
         f.write('boundaryField                                                                      \n')
         f.write('{                                                                                  \n')
         f.write('   inlet                                                                           \n')
         f.write('   {                                                                               \n')
-        f.write('       type                flowRateInletVelocity;                                  \n')
-        f.write('       massFlowRate        $mdotInlet;                                             \n')
-        f.write('       rho                 rho;                                                    \n')
+        f.write('       type            flowRateInletVelocity;                                      \n')
+        f.write('       massFlowRate    {}; \n'.format(self.mDot))
+        f.write('       value           $internalField;                                             \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   outlet                                                                          \n')
         f.write('   {                                                                               \n')
-        f.write('       type                inletOutlet;                                            \n')
-        f.write('       inletValue          uniform $Uinlet;                                        \n')
-        f.write('       value               uniform $Uinlet;                                        \n')
+        f.write('       type            zeroGradient;                                               \n')
         f.write('   }                                                                               \n')
+        # f.write('                                                                                   \n')
+        # f.write('   "(top|bottom)"                                                                  \n')
+        # f.write('   {                                                                               \n')
+        # f.write('       type            Slip;                                                       \n')
+        # f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
@@ -402,13 +399,13 @@ if __name__ == '__main__':
     parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
     args = parser.parse_args()
 
-    zeroDir = generateInitialConditions(args.mach)
+    zeroDir = generateInitialConditions()
 
     zeroDir.calculatePressure()
     zeroDir.calculateTemperature()
     zeroDir.calculateVelocity()
+    zeroDir.calculateMassFlowRate()
     zeroDir.calculateTurbulentKineticEnergy()
     zeroDir.calculateSpecificDissipationRate()
-    zeroDir.calculateMassFlowRate()
 
     zeroDir.writeToFile()

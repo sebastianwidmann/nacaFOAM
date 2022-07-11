@@ -33,3 +33,6 @@ def calculateDynamicViscosity(T):
 
 def calculatePrandtlNumber():
     return mu * cp / lamb
+
+def calculateReynoldsNumber(rho, u, L, mu):
+    return rho * u * L / mu
