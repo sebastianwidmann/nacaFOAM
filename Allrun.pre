@@ -24,10 +24,13 @@ fi
 # Generate initial conditions of simulation
 python scripts/generateZeroDirectoryFiles.py $mach
 
-# Generate blockMeshDict file
-python scripts/generateBlockMeshDict.py $airfoil $alpha $mach
+# Generate ".stl" file of airfoil
+python scripts/generateStlFile.py $airfoil $alpha
 
-# Run blockMeshDict to generate mesh
+# Generate blockMeshDict file
+python scripts/generateBlockMeshDict.py 0.1
+
+# Generate background mesh with blockMesh
 runApplication blockMesh
 
 # Generate "0" directory from template "/0.orig"
