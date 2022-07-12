@@ -14,22 +14,32 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-dimensions     [1 -1 -1 0 0 0 0];                                                  
+dimensions             [1 -1 -1 0 0 0 0];                                          
                                                                                    
-internalField  uniform 0;                                                          
+internalField          uniform 0;                                                  
                                                                                    
 boundaryField                                                                      
 {                                                                                  
-   "(inlet|outlet)"                                                                
+   inlet                                                                           
    {                                                                               
-       type    calculated;                                                         
-       value   uniform 0;                                                          
+       type            calculated;                                                 
+       value           $internalField;                                             
+   }                                                                               
+                                                                                   
+   outlet                                                                          
+   {                                                                               
+       type            zeroGradient;                                               
    }                                                                               
                                                                                    
    wall                                                                            
    {                                                                               
-       type    compressible::alphatWallFunction;                                   
-       value   uniform 0;                                                          
+       type            compressible::alphatWallFunction;                           
+       value           $internalField;                                             
+   }                                                                               
+                                                                                   
+   "(top|bottom)"                                                                  
+   {                                                                               
+       type            zeroGradient;                                               
    }                                                                               
                                                                                    
    #includeEtc "caseDicts/setConstraintTypes"                                      

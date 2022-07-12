@@ -14,32 +14,32 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-mdotInlet      190.24039779734545; 
-Uinlet         (39.08250582560623 0 0); 
+dimensions             [0 1 -1 0 0 0 0];                                           
                                                                                    
-dimensions     [0 1 -1 0 0 0 0];                                                   
-                                                                                   
-internalField  uniform $Uinlet;                                                    
+internalField          uniform (133.9918242212544 0.0 0.0); 
                                                                                    
 boundaryField                                                                      
 {                                                                                  
    inlet                                                                           
    {                                                                               
-       type                flowRateInletVelocity;                                  
-       massFlowRate        $mdotInlet;                                             
-       rho                 rho;                                                    
+       type            flowRateInletVelocity;                                      
+       massFlowRate    606.8304733459942; 
+       value           $internalField;                                             
    }                                                                               
                                                                                    
    outlet                                                                          
    {                                                                               
-       type                inletOutlet;                                            
-       inletValue          uniform $Uinlet;                                        
-       value               uniform $Uinlet;                                        
+       type            zeroGradient;                                               
    }                                                                               
                                                                                    
    wall                                                                            
    {                                                                               
        type            noSlip;                                                     
+   }                                                                               
+                                                                                   
+   "(top|bottom)"                                                                  
+   {                                                                               
+       type            slip;                                                       
    }                                                                               
                                                                                    
    #includeEtc "caseDicts/setConstraintTypes"                                      

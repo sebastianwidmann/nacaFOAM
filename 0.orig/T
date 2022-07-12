@@ -14,29 +14,29 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-Tinlet         287.3898538366022; 
-T0inlet        288.15; 
+dimensions             [0 0 0 1 0 0 0];                                            
                                                                                    
-dimensions     [0 0 0 1 0 0 0];                                                    
-                                                                                   
-internalField  uniform $Tinlet;                                                    
+internalField          uniform 279.2151162790697; 
                                                                                    
 boundaryField                                                                      
 {                                                                                  
    inlet                                                                           
    {                                                                               
        type            fixedValue;                                                 
-       value           uniform $Tinlet;                                            
+       value           $internalField;                                             
    }                                                                               
                                                                                    
    outlet                                                                          
    {                                                                               
-       type            totalTemperature;                                           
-       T0              uniform $T0inlet;                                           
-       gamma           1.4; 
+       type            zeroGradient;                                               
    }                                                                               
                                                                                    
    wall                                                                            
+   {                                                                               
+       type            zeroGradient;                                               
+   }                                                                               
+                                                                                   
+   "(top|bottom)"                                                                  
    {                                                                               
        type            zeroGradient;                                               
    }                                                                               

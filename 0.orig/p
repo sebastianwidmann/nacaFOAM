@@ -14,28 +14,29 @@ FoamFile
 }                                                                                  
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
                                                                                    
-pOutlet              100392.53922738862; 
-ptInlet              101325; 
+dimensions             [1 -1 -2 0 0 0 0];                                          
                                                                                    
-dimensions     [1 -1 -2 0 0 0 0];                                                  
-                                                                                   
-internalField  uniform $pOutlet;                                                   
+internalField          uniform 90748.12736236275; 
                                                                                    
 boundaryField                                                                      
 {                                                                                  
    inlet                                                                           
    {                                                                               
-       type            totalPressure;                                              
-       p0              uniform $ptInlet;                                           
+       type            zeroGradient;                                               
    }                                                                               
                                                                                    
    outlet                                                                          
    {                                                                               
        type            fixedValue;                                                 
-       value           uniform $pOutlet;                                           
+       value           $internalField;                                             
    }                                                                               
                                                                                    
    wall                                                                            
+   {                                                                               
+       type            zeroGradient;                                               
+   }                                                                               
+                                                                                   
+   "(top|bottom)"                                                                  
    {                                                                               
        type            zeroGradient;                                               
    }                                                                               
