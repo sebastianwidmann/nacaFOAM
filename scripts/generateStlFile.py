@@ -147,7 +147,6 @@ class generateGeometryFile(object):
         facesSide = np.zeros((self.vertices.shape[0] - 4, 3))
 
         for j in range(1, int(0.5 * facesSide.shape[0]) - 4):
-            print(j)
             facesSide[2 * j - 1] = [j + 1, j, int(0.5 * self.vertices.shape[0]) - j]
             facesSide[2 * j] = [j + 1, int(0.5 * self.vertices.shape[0]) - j, int(0.5 * self.vertices.shape[0]) - j - 1]
 
