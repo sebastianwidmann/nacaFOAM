@@ -128,8 +128,8 @@ class generateGeometryFile(object):
         vertices = np.concatenate((np.flip(lower, 0), upper))
 
         self.vertices = np.zeros((2 * vertices.shape[0], 3))
-        self.vertices[:vertices.shape[0], 2] = 0.1
-        self.vertices[vertices.shape[0]:, 2] = -0.1
+        self.vertices[:vertices.shape[0], 2] = 1
+        self.vertices[vertices.shape[0]:, 2] = -1
 
         self.vertices[:vertices.shape[0], 0:2] = vertices
         self.vertices[vertices.shape[0]:, 0:2] = vertices
@@ -171,10 +171,10 @@ class generateGeometryFile(object):
         if not os.path.exists('constant/triSurface'):
             os.makedirs('constant/triSurface')
 
-        naca.save('constant/triSurface/naca{}_{}deg.stl'.format(args.airfoil, int(args.alpha)))
+        naca.save('constant/triSurface/naca{}_{}deg.stl'.format(args.airfoil, args.alpha))
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate blockMeshDict File')
+    parser = argparse.ArgumentParser(description='Write airfoil geometry file (.stl) into "constant/triSurface"')
     parser.add_argument('airfoil', type=str, help='NACA airfoil digits')
     parser.add_argument('alpha', type=float, help='Angle of attack [deg]')
     args = parser.parse_args()
