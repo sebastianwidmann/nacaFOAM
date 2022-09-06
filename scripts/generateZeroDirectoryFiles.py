@@ -47,6 +47,22 @@ class generateInitialConditions(object):
         self.calculateSpecificDissipationRate()
         self.writeToFile()
 
+    def calculateFirstLayerThickness(self):
+        """
+        Returns
+        -------
+        Minimum cell height in boundary layer
+        """
+        yplus = 0.99
+
+        rho = calculateStaticDensity(self.p, self.T)
+        u = self.mach * calculateSpeedofSound(self.T)
+        Re = rho * u / mu  # [-] Freestream Reynolds number
+        cf = np.power(2 * np.log10(Re) - 0.65, -2.3)  # [-] Skin friction coefficient based on Schlichting
+        Tau_w = 0.5 * cf * rho * u ** 2  # [Pa] Wall shear stress
+        u_star = np.sqrt(Tau_w / rho)  # [m*s^-1] Friction velocity
+        return yplus * mu / (rho * u_star)
+
     def writeToFile(self):
         self.writeToFile_KinematicEddyViscosity()
         self.writeToFile_Pressure()
@@ -76,11 +92,12 @@ class generateInitialConditions(object):
         self.k_inf = kLower
 
     def calculateSpecificDissipationRate(self):
-        omegaLower = ceil(np.linalg.norm(self.u) / 30)
-        omegaUpper = floor(10 * np.linalg.norm(self.u) / 30)
+        # TODO: implement inheritance for minimum cell layer thickness and domain size (replace 40 by windtunnel length)
+        omegaLower = ceil(np.linalg.norm(self.u) / 40)
+        omegaUpper = floor(10 * np.linalg.norm(self.u) / 40)
 
         self.omega_inf = omegaLower
-        self.omega_wall = ceil(60 * (mu / calculateStaticDensity(self.p, self.T)) / (0.075 * 3.2112207443967394e-06**2))
+        self.omega_wall = ceil(60 * (mu / calculateStaticDensity(self.p, self.T)) / (0.075 * self.calculateFirstLayerThickness()**2))
 
     def writeToFile_KinematicEddyViscosity(self):
         f = open('0.orig/nut', 'w+')
@@ -453,7 +470,7 @@ class generateInitialConditions(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate Initial conditions files')
+    parser = argparse.ArgumentParser(description='Generate initial condition files, saved into "0" directory')
     parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
     args = parser.parse_args()
 
