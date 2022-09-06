@@ -24,10 +24,4 @@ fi
 # Generate "0" and "constant" directory, generate blockMeshDict
 ./Allrun.pre $airfoil $alpha $mach
 
-runParallel -s decompose \
-    redistributePar -decompose -overwrite -withZero
-
-runParallel $(getApplication)
-
-runParallel -s reconstruct \
-    redistributePar -reconstruct -overwrite
+runApplication $(getApplication)
