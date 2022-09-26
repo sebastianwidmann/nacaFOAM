@@ -1,4 +1,4 @@
-from math import sqrt
+from numpy import sqrt
 
 # Define thermodynamic properties of air at ICAO standard atmosphere
 T0 = 288.15  # [K] Total temperature
