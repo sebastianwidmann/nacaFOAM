@@ -1,7 +1,7 @@
 log.*
 postProcessing
-constant/extendedFeatureEdgeMesh
-constant/polyMesh
-constant/triSurface
+constant/extendedFeatureEdgeMesh/
+constant/polyMesh/
+constant/triSurface/
 0/
 processor*/
