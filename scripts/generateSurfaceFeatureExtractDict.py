@@ -29,7 +29,7 @@ class generateSurfaceFeatureExtract(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
