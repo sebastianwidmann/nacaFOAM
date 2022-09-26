@@ -1,10 +1,10 @@
-/*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v2112                                 |
-|   \\  /    A nd           | Website:  www.openfoam.com                      |
-|    \\/     M anipulation  |                                                 |
-\*---------------------------------------------------------------------------*/
+/*--------------------------------*- C++ -*----------------------------------*\   
+| =========                 |                                                 |    
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  
+|  \\    /   O peration     | Version:  v2112                                 |  
+|   \\  /    A nd           | Website:  www.openfoam.com                      |  
+|    \\/     M anipulation  |                                                 |  
+\*---------------------------------------------------------------------------*/   
 FoamFile
 {
     version     2.0;
@@ -14,68 +14,59 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     rhoSimpleFoam;
+application        rhoSimpleFoam;
 
-startFrom       startTime;
+startFrom          startTime;
 
-startTime       0;
+startTime          0;
 
-stopAt          endTime;
+stopAt             endTime;
 
-endTime         1000;
+endTime            10000;
 
-deltaT          1;
+deltaT             1;
 
-writeControl    timeStep;
+writeControl       timeStep;
 
-writeInterval   50;
+writeInterval      10000;
 
-purgeWrite      0;
+purgeWrite         0;
 
-writeFormat     ascii;
+writeFormat        binary;
 
-writePrecision  8;
+writePrecision     6;
 
-writeCompression off;
+writeCompression   on;
 
-timeFormat      general;
+timeFormat         general;
 
-timePrecision   6;
+timePrecision      6;
 
-runTimeModifiable true;
+runTimeModifiable  true;
 
 functions
 {
-    #includeFunc MachNo
-    #includeFunc solverInfo
-
-    readFields1
-    {
-        type        readFields;
-        libs        (fieldFunctionObjects);
-        fields      (phi);
-        readOnStart true;
-    }
-
-    contErr
-    {
-        type            div;
-        libs            (fieldFunctionObjects);
-        field           phi;
-        executeControl  writeTime;
-        writeControl    writeTime;
-    }
-
-    momErr
-    {
-        type            momentumError;
-        libs            (fieldFunctionObjects);
-        cellZones       (z1);
-        nLayers         2;
-        executeControl  writeTime;
-        writeControl    writeTime;
-    }
+    #include "forceCoeffs"
+    #include "runTimeControl"
 }
 
+yPlus1
+{
+   type            yPlus;
+   libs            (fieldFunctionObjects);
 
-// ************************************************************************* //
+   writePrecision  8;
+   writeToFile     true;
+   useUserTime     true;
+   region          region0;
+   enabled         true;
+   log             true;
+   timeStart       0;
+   timeEnd         10000;
+   executeControl  timeStep;
+   executeInterval 1;
+   writeControl    timeStep;
+   writeInterval   1;
+}
+                                                                                   
+// ************************************************************************* //    
