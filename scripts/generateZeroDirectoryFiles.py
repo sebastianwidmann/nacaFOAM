@@ -83,18 +83,18 @@ class generateInitialConditions(object):
         self.u = np.array([u, 0, 0])
 
     def calculateMassFlowRate(self):
-        self.mDot = calculateStaticDensity(self.p, self.T) * np.linalg.norm(self.u) * (20 * 0.2)
+        self.mDot = calculateStaticDensity(self.p, self.T) * np.linalg.norm(self.u) * (20 * 1.0)
 
     def calculateTurbulentKineticEnergy(self):
-        kLower = 1e-5 * np.linalg.norm(self.u)**2 / calculateReynoldsNumber(calculateStaticDensity(self.p, self.T), np.linalg.norm(self.u), 40, mu)
-        kUpper = 1e-1 * np.linalg.norm(self.u)**2 / calculateReynoldsNumber(calculateStaticDensity(self.p, self.T), np.linalg.norm(self.u), 40, mu)
+        kLower = 1e-5 * np.linalg.norm(self.u)**2 / calculateReynoldsNumber(calculateStaticDensity(self.p, self.T), np.linalg.norm(self.u), 30, mu)
+        kUpper = 1e-1 * np.linalg.norm(self.u)**2 / calculateReynoldsNumber(calculateStaticDensity(self.p, self.T), np.linalg.norm(self.u), 30, mu)
 
         self.k_inf = kLower
 
     def calculateSpecificDissipationRate(self):
         # TODO: implement inheritance for minimum cell layer thickness and domain size (replace 40 by windtunnel length)
-        omegaLower = ceil(np.linalg.norm(self.u) / 40)
-        omegaUpper = floor(10 * np.linalg.norm(self.u) / 40)
+        omegaLower = ceil(np.linalg.norm(self.u) / 30)
+        omegaUpper = floor(10 * np.linalg.norm(self.u) / 30)
 
         self.omega_inf = omegaLower
         self.omega_wall = ceil(60 * (mu / calculateStaticDensity(self.p, self.T)) / (0.075 * self.calculateFirstLayerThickness()**2))
@@ -105,7 +105,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -158,7 +158,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -210,7 +210,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -263,7 +263,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -315,7 +315,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -368,7 +368,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -421,7 +421,7 @@ class generateInitialConditions(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
