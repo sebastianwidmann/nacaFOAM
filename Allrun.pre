@@ -30,7 +30,7 @@ python scripts/generateZeroDirectoryFiles.py $mach
 python scripts/generateStlFile.py $airfoil $alpha
 
 # Generate blockMeshDict file
-python scripts/generateBlockMeshDict.py 0.1
+python scripts/generateBlockMeshDict.py 0.2
 
 # Generate surfaceFeatureExtractDict file
 python scripts/generateSurfaceFeatureExtractDict.py $airfoil $alpha
