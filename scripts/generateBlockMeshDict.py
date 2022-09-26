@@ -16,6 +16,7 @@ the "/system" directory.
 import argparse
 import numpy as np
 from scipy.optimize import newton
+from distutils.util import strtobool
 
 class generateBlockMeshDict(object):
     def __init__(self, baseCellSize):
@@ -31,14 +32,14 @@ class generateBlockMeshDict(object):
         self.setDomainSize()
         self.writeToFile()
 
-    def setDomainSize(self, xMin=-10, xMax=30, yMin=-10, yMax=10):
+    def setDomainSize(self, xMin=-10, xMax=20, yMin=-10, yMax=10):
         # Domain size parameter
         self.xMin = xMin
         self.xMax = xMax
         self.yMin = yMin
         self.yMax = yMax
-        self.zMin = -0.1
-        self.zMax = 0.1
+        self.zMin = - 0.5 * self.baseCellSize / (2**5)
+        self.zMax = 0.5 * self.baseCellSize / (2**5)
 
         self.xCells = self.setNumberOfCells(1, abs(self.xMax) + abs(self.xMin), self.baseCellSize)
         self.yCells = self.setNumberOfCells(1, abs(self.yMax) + abs(self.yMin), self.baseCellSize)
@@ -74,7 +75,7 @@ class generateBlockMeshDict(object):
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -156,7 +157,7 @@ class generateBlockMeshDict(object):
         f.write('       );                                                                          \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
-        f.write('   back                                                                            \n')
+        f.write('   symBack                                                                         \n')
         f.write('   {                                                                               \n')
         f.write('       type symmetryPlane;                                                         \n')
         f.write('       faces                                                                       \n')
@@ -165,7 +166,7 @@ class generateBlockMeshDict(object):
         f.write('       );                                                                          \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
-        f.write('   front                                                                           \n')
+        f.write('   symFront                                                                        \n')
         f.write('   {                                                                               \n')
         f.write('       type symmetryPlane;                                                         \n')
         f.write('       faces                                                                       \n')
