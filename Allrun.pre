@@ -91,25 +91,13 @@ runApplication checkMesh -latestTime # Check mesh for errors
 
 python scripts/generateFvOptions.py # Generate fvOptions
 
-python scripts/generateForceCoefficients.py $mach # Generate controlDict
+python scripts/generateForceCoefficients.py $mach
 
 restore0Dir # Generate "0" directory from template "/0.orig"
+
+runApplication renumberMesh -overwrite
 #------------------------------------------------------------------------------
 #end=$(date +%s.%N)                               # Uncomment for benchmarking
 #runtime=$(python -c "print(${end} - ${start})")  # Uncomment for benchmarking
 #
 #echo "Runtime was $runtime"                      # Uncomment for benchmarking
-
-
-#------------------------------------------------------------------------------
-# Backup implementation for parallelised execution of sHM
-#runApplication decomposePar
-#
-#runParallel snappyHexMesh -overwrite
-#mv log.snappyHexMesh log.sHM1
-##rm -f log.snappyHexMesh
-#
-#runApplication reconstructParMesh -constant
-#ls -d processor* | xargs -i rm -rf ./{} $1
-#rm -f log.decomposePar
-#rm -f log.reconstructParMesh
