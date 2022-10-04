@@ -32,14 +32,14 @@ class generateBlockMeshDict(object):
         self.setDomainSize()
         self.writeToFile()
 
-    def setDomainSize(self, xMin=-10, xMax=20, yMin=-10, yMax=10):
+    def setDomainSize(self, xMin=-10, xMax=30, yMin=-10, yMax=10):
         # Domain size parameter
         self.xMin = xMin
         self.xMax = xMax
         self.yMin = yMin
         self.yMax = yMax
-        self.zMin = - 0.5 * self.baseCellSize / (2**5)
-        self.zMax = 0.5 * self.baseCellSize / (2**5)
+        self.zMin = - 0.5
+        self.zMax = - 0.49375
 
         self.xCells = self.setNumberOfCells(1, abs(self.xMax) + abs(self.xMin), self.baseCellSize)
         self.yCells = self.setNumberOfCells(1, abs(self.yMax) + abs(self.yMin), self.baseCellSize)
