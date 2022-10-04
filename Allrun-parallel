@@ -23,12 +23,19 @@ fi
 
 ./Allrun.pre $airfoil $alpha $mach
 
-runParallel -s decompose \
-    redistributePar -decompose -overwrite -withZero
+#start=$(date +%s.%N)
+
+runApplication decomposePar
 
 runParallel $(getApplication)
 
-runParallel -s reconstruct \
-    redistributePar -reconstruct -overwrite
+runApplication reconstructPar
 
+#end=$(date +%s.%N)
+#runtime=$(python -c "print(${end} - ${start})")
+#
+#echo "Runtime was $runtime"
+#
+#runApplication foamToVTK -latestTime -no-boundary -overwrite
+#rm -f log.foamToVTK
 #------------------------------------------------------------------------------
