@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  v2112                                 |
+|  \\    /   O peration     | Version:  v2206                                 |
 |   \\  /    A nd           | Website:  www.openfoam.com                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
@@ -16,20 +16,33 @@ FoamFile
 
 solvers
 {
+
     p
     {
         solver          GAMG;
         smoother        GaussSeidel;
         tolerance       1e-6;
-        relTol          0.01;
+        relTol          0;
+/*
+        minIter                 3;
+        maxIter                 100;
+        nPreSweeps              0;
+        nPostSweeps             2;
+        cacheAgglomeration      on;
+        agglomerator            faceAreaPair;
+        nCellsInCoarsestLevel   500;
+        mergeLevels             1;
+*/
     }
 
     "(U|k|omega|e)"
     {
         solver          PBiCGStab;
         preconditioner  DILU;
-        tolerance       1e-9;
-        relTol          0.001;
+        tolerance       1e-8;
+        relTol          0;
+
+        minIter         2;
     }
 
 
@@ -37,9 +50,23 @@ solvers
     {
         solver          GAMG;
         smoother        GaussSeidel;
-        tolerance       1e-7;
-        relTol          0.01;
+        tolerance       1e-8;
+        relTol          0.0;
     }
+
+/*
+    yPsi
+    {
+        solver          GAMG;
+        smoother        GaussSeidel;
+        cacheAgglomeration true;
+        nCellsInCoarsestLevel 10;
+        agglomerator    faceAreaPair;
+        mergeLevels     1;
+        tolerance       1e-5;
+        relTol          0;
+    }
+*/
 }
 
 SIMPLE
@@ -48,23 +75,14 @@ SIMPLE
 
     pMinFactor          0.1;
     pMaxFactor          2;
-/*
-    residualControl
-    {
-        p               1e-4;
-        U               1e-4;
-        "(k|omega|e)"   1e-4;
-    }
-*/
-
 }
 
 relaxationFactors
 {
     fields
     {
-        p               0.7;
-        rho             0.01;
+        p               0.3;
+        rho             0.3;
     }
     equations
     {
@@ -73,6 +91,5 @@ relaxationFactors
         "(k|omega)"     0.7;
     }
 }
-
 
 // ************************************************************************* //
