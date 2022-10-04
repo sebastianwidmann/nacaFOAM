@@ -46,27 +46,10 @@ runTimeModifiable  true;
 
 functions
 {
-    #include "forceCoeffs"
-    #include "runTimeControl"
-}
-
-yPlus1
-{
-   type            yPlus;
-   libs            (fieldFunctionObjects);
-
-   writePrecision  8;
-   writeToFile     true;
-   useUserTime     true;
-   region          region0;
-   enabled         true;
-   log             true;
-   timeStart       0;
-   timeEnd         10000;
-   executeControl  timeStep;
-   executeInterval 1;
-   writeControl    timeStep;
-   writeInterval   1;
+    #include "foForceCoeffs"
+    //#include "foPressureCoeffs"
+    #include "foRunTimeControl"
+    #include "foYPlus"
 }
                                                                                    
 // ************************************************************************* //    
