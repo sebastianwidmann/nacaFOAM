@@ -27,7 +27,7 @@ class generateGeometryFile(object):
         self.alpha = np.deg2rad(angle)
 
         # Airfoil parameter
-        self.nPoints = 1000
+        self.nPoints = 500
         self.chord = 1
         self.m = self.p = self.q = self.t = None
 
