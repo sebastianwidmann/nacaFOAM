@@ -24,12 +24,12 @@ class generateForceCoefficients(object):
         self.writeToFile()
 
     def writeToFile(self):
-        f = open('system/forceCoeffs', 'w+')
+        f = open('system/foForceCoeffs', 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
         f.write('| \\\\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  \n')
-        f.write('|  \\\\    /   O peration     | Version:  v2112                                 |  \n')
+        f.write('|  \\\\    /   O peration     | Version:  v2206                                 |  \n')
         f.write('|   \\\\  /    A nd           | Website:  www.openfoam.com                      |  \n')
         f.write('|    \\\\/     M anipulation  |                                                 |  \n')
         f.write('\\*---------------------------------------------------------------------------*/   \n')
@@ -81,7 +81,7 @@ class generateForceCoefficients(object):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate controlDict file and save into "system/controlDict"')
+    parser = argparse.ArgumentParser(description='Generate functions sub-dictionary for controlDict. File is saved into "system/foForceCoeffs"')
     parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
     args = parser.parse_args()
 
