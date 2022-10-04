@@ -5,3 +5,8 @@ constant/polyMesh/
 constant/triSurface/
 0/
 processor*/
+
+system/foForceCoeffs
+system/blockMeshDict
+system/snappyHexMeshDict
+system/surfaceFeatureExtractDict
