@@ -1,0 +1,92 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2112                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      runTimeControl;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+runTimeControl
+{
+    type            runTimeControl;
+    libs            ("libutilityFunctionObjects.so");
+    conditions
+    {
+        condition0
+        {
+            type            average;
+            functionObject  forceCoeffs;
+            fields          (Cd);
+            tolerance       1e-4;
+            window          100;
+            windowType      exact;
+            groupID         1;
+        }
+
+        condition1
+        {
+            type            average;
+            functionObject  forceCoeffs;
+            fields          (Cl);
+            tolerance       1e-4;
+            window          100;
+            windowType      exact;
+            groupID         1;
+        }
+
+        condition2
+        {
+            type            equationInitialResidual;
+            fields          (p);
+            value           1e-4;
+            mode            minimum;
+            groupID         1;
+        }
+
+        condition3
+        {
+            type            equationInitialResidual;
+            fields          (U);
+            value           1e-4;
+            mode            minimum;
+            groupID         1;
+        }
+
+        condition4
+        {
+            type            equationInitialResidual;
+            fields          (k);
+            value           1e-4;
+            mode            minimum;
+            groupID         1;
+        }
+
+        condition5
+        {
+            type            equationInitialResidual;
+            fields          (omega);
+            value           1e-4;
+            mode            minimum;
+            groupID         1;
+        }
+
+        condition6
+        {
+            type            equationInitialResidual;
+            fields          (e);
+            value           1e-4;
+            mode            minimum;
+            groupID         1;
+        }
+    }
+}
+
+// ************************************************************************* //
