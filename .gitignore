@@ -4,6 +4,7 @@ constant/extendedFeatureEdgeMesh/
 constant/polyMesh/
 constant/triSurface/
 0/
+0.orig/
 processor*/
 
 system/foForceCoeffs
