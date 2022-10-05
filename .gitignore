@@ -11,3 +11,6 @@ system/foForceCoeffs
 system/blockMeshDict
 system/snappyHexMeshDict
 system/surfaceFeatureExtractDict
+
+naca0012-mesh-independence-study/
+naca0012-validation/
