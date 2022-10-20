@@ -1,16 +1,16 @@
 log.*
 postProcessing
-constant/extendedFeatureEdgeMesh/
-constant/polyMesh/
-constant/triSurface/
+nacaFOAM-template/constant/extendedFeatureEdgeMesh/
+nacaFOAM-template/constant/polyMesh/
+nacaFOAM-template/constant/triSurface/
 0/
-0.orig/
+nacaFOAM-template/0.org/
 processor*/
 
-system/foForceCoeffs
-system/blockMeshDict
-system/snappyHexMeshDict
-system/surfaceFeatureExtractDict
+nacaFOAM-template/system/foForceCoeffs
+nacaFOAM-template/system/blockMeshDict
+nacaFOAM-template/system/snappyHexMeshDict
+nacaFOAM-template/system/surfaceFeatureExtractDict
 
 naca0012-mesh-independence-study/
 naca0012-validation/
