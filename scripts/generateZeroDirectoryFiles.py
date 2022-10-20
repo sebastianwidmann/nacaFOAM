@@ -16,21 +16,21 @@ velocity u. Initial condition files written into the "/0.orig" directory.
 # ---------------------------------------------------------------------------
 
 import numpy as np
-import argparse
+import os
 from math import ceil, floor
-from flowProperties import *
+from scripts.flowProperties import *
 
 
-class generateInitialConditions(object):
-    def __init__(self, mach):
+class generateInitialConditionsFiles(object):
+    def __init__(self, caseDir, mach):
+        self.caseDir = caseDir
         self.mach = mach
+
         self.p = None  # [Pa] Static pressure
         self.T = None  # [K] Static temperature
         self.mDot = None # [kg * s^-1] Mass flow rate
         self.u = None  # [m * s^-1] Freestream velocity vector
-
         self.k_inf = None  # [m^2 * s^-2] Freestream turbulent kinetic energy
-
         self.omega_inf = None  # [s^-1] Freestream turbulence specific dissipation rate
         self.omega_wall = None  # [s^-1] Wall turbulence specific dissipation rate
 
@@ -84,7 +84,8 @@ class generateInitialConditions(object):
         self.omega_wall = ceil(60 * (mu / calculateStaticDensity(self.p, self.T)) / (0.075 * calculateFirstLayerThickness(self.mach, 30)**2))
 
     def writeToFile_KinematicEddyViscosity(self):
-        f = open('0.orig/nut', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/nut')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -137,7 +138,8 @@ class generateInitialConditions(object):
         f.close()
 
     def writeToFile_Pressure(self):
-        f = open('0.orig/p', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/p')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -189,7 +191,8 @@ class generateInitialConditions(object):
         f.close()
 
     def writeToFile_SpecificDissipationRate(self):
-        f = open('0.orig/omega', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/omega')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -242,7 +245,8 @@ class generateInitialConditions(object):
         f.close()
 
     def writeToFile_Temperature(self):
-        f = open('0.orig/T', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/T')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -294,7 +298,8 @@ class generateInitialConditions(object):
         f.close()
 
     def writeToFile_TurbulentKineticEnergy(self):
-        f = open('0.orig/k', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/k')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -347,7 +352,8 @@ class generateInitialConditions(object):
         f.close()
 
     def writeToFile_TurbulentThermalDiffusivity(self):
-        f = open('0.orig/alphat', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/alphat')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -385,7 +391,7 @@ class generateInitialConditions(object):
         f.write('   wall                                                                            \n')
         f.write('   {                                                                               \n')
         f.write('       type            compressible::alphatWallFunction;                           \n')
-        f.write('       value           $internalField;                                             \n')
+        f.write('       value           uniform 1e-10;                                              \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   "(top|bottom)"                                                                  \n')
@@ -400,7 +406,8 @@ class generateInitialConditions(object):
         f.close()
 
     def writeToFile_Velocity(self):
-        f = open('0.orig/U', 'w+')
+        saveDir = os.path.join(self.caseDir, '0.org/U')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -451,11 +458,3 @@ class generateInitialConditions(object):
         f.write('                                                                                   \n')
         f.write('// ************************************************************************* //    \n')
         f.close()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate initial condition files, saved into "0" directory')
-    parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
-    args = parser.parse_args()
-
-    zeroDir = generateInitialConditions(args.mach)

@@ -11,20 +11,24 @@ Class implementation to generate controlDict. controlDict will be written
 into the "/system" directory.
 """
 # ---------------------------------------------------------------------------
-import argparse
-from flowProperties import *
+import os
+from scripts.flowProperties import *
 
-class generateForceCoefficients(object):
-    def __init__(self):
-        self.p = calculateStaticPressure(args.mach)
-        self.T = calculateStaticTemperature(args.mach)
+class generateForceCoefficientsDict(object):
+    def __init__(self, caseDir, mach):
+        self.caseDir = caseDir
+        self.mach = mach
+
+        self.p = calculateStaticPressure(self.mach)
+        self.T = calculateStaticTemperature(self.mach)
         self.rho = calculateStaticDensity(self.p, self.T)
-        self.u = args.mach * calculateSpeedofSound(self.T)
+        self.u = self.mach * calculateSpeedofSound(self.T)
 
         self.writeToFile()
 
     def writeToFile(self):
-        f = open('system/foForceCoeffs', 'w+')
+        saveDir = os.path.join(self.caseDir, 'system/foForceCoeffs')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -78,11 +82,3 @@ class generateForceCoefficients(object):
         f.write('                                                                                   \n')
         f.write('// ************************************************************************* //    \n')
         f.close()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate functions sub-dictionary for controlDict. File is saved into "system/foForceCoeffs"')
-    parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
-    args = parser.parse_args()
-
-    generateForceCoefficients()

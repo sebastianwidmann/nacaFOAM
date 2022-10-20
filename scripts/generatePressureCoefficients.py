@@ -3,30 +3,28 @@
 # ----------------------------------------------------------------------------
 # Created By  : Sebastian Widmann
 # Institution : TU Munich, Department of Aerospace and Geodesy
-# Created Date: August 31, 2022
+# Created Date: September 27, 2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
 """
-Class implementation to generate explicitly use surfaceExtractFeature by
-creating the ".eMesh" file located in "constant/triSurface" directory
-for improved surface snapping of snappyHexMesh.
+Class implementation to generate pressure function within controlDict.
+pressureCoeffs will be written into the "/system" directory.
 """
 # ---------------------------------------------------------------------------
+import argparse
+from flowProperties import *
 
-import os
-
-class generateSurfaceFeatureExtractDict(object):
-    def __init__(self, caseDir, airfoil, angle):
-        self.caseDir = caseDir
-        self.airfoil = airfoil
-        self.angle = angle
+class generatePressureCoefficients(object):
+    def __init__(self):
+        self.p = calculateStaticPressure(args.mach)
+        self.T = calculateStaticTemperature(args.mach)
+        self.rho = calculateStaticDensity(self.p, self.T)
+        self.u = args.mach * calculateSpeedofSound(self.T)
 
         self.writeToFile()
 
     def writeToFile(self):
-
-        saveDir = os.path.join(self.caseDir, 'system/surfaceFeatureExtractDict')
-        f = open(saveDir, 'w+')
+        f = open('system/foPressureCoeffs', 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -40,27 +38,38 @@ class generateSurfaceFeatureExtractDict(object):
         f.write('    version     2.0;                                                               \n')
         f.write('    format      ascii;                                                             \n')
         f.write('    class       dictionary;                                                        \n')
-        f.write('    object      surfaceFeatureExtractDict;                                         \n')
+        f.write('    object      pressure;                                                          \n')
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        f.write('naca{}_{}.stl \n'.format(self.airfoil, self.angle))
+        f.write('force                                                                              \n')
         f.write('{                                                                                  \n')
-        f.write('   extractionMethod        extractFromSurface;                                     \n')
+        f.write('   type            pressure;                                                       \n')
+        f.write('   libs            (fieldFunctionObjects);                                         \n')
+        f.write('   mode            staticCoeff;                                                    \n')
         f.write('                                                                                   \n')
-        f.write('   extractFromSurfaceCoeffs                                                        \n')
-        f.write('   {                                                                               \n')
-        f.write('       includedAngle       150;                                                    \n')
-        f.write('   }                                                                               \n')
+        f.write('   writeFields     no;                                                             \n')
         f.write('                                                                                   \n')
-        f.write('   subsetFeatures                                                                  \n')
-        f.write('   {                                                                               \n')
-        f.write('       nonManifoldEdges    yes;                                                    \n')
-        f.write('       openEdges           yes;                                                    \n')
-        f.write('   }                                                                               \n')
-        f.write('                                                                                   \n')
-        f.write('   writeObj                no;                                                     \n')
+        f.write('   p               p;                                                              \n')
+        f.write('   U               U;                                                              \n')
+        f.write('   rho             rho;                                                            \n')
+        f.write('   pRef            {}; \n'.format(p0))
+        f.write('   rhoInf          {}; \n'.format(self.rho))
+        f.write('   hydroStaticMode none;                                                           \n')
+        f.write('   g               (0 -9.81 0);                                                    \n')
+        f.write('   hRef            0;                                                              \n')
+        f.write('   pInf            {}; \n'.format(self.p))
+        f.write('   UInf            ({} 0 0); \n'.format(self.u))
+        f.write('   lRef            1;                                                              \n')
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
         f.write('// ************************************************************************* //    \n')
         f.close()
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate functions sub-dictionary for controlDict. File is saved into "system/pressureCoeffs"')
+    parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
+    args = parser.parse_args()
+
+    generatePressureCoefficients()

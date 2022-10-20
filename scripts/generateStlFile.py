@@ -14,16 +14,17 @@ the "/constant/triSurface" directory.
 """
 # ---------------------------------------------------------------------------
 
-import argparse
 import numpy as np
 import os
 from stl import mesh
 
 
 class generateGeometryFile(object):
-    def __init__(self, airfoil, angle):
+    def __init__(self, caseDir, airfoil, angle):
+        self.caseDir = str(caseDir)
         self.foil = airfoil  # string used for creating Wavefront object files
         self.airfoil = [int(i) for i in airfoil]
+        self.angle = angle
         self.alpha = np.deg2rad(angle)
 
         # Airfoil parameter
@@ -168,21 +169,12 @@ class generateGeometryFile(object):
             for j in range(3):
                 naca.vectors[i][j] = self.vertices[f[j], :]
 
-        if not os.path.exists('constant/triSurface'):
-            os.makedirs('constant/triSurface')
+        folderDir = os.path.join(self.caseDir, 'constant/triSurface')
 
-        naca.save('constant/triSurface/naca{}_{}deg.stl'.format(args.airfoil, args.alpha))
+        if not os.path.exists(folderDir):
+            os.makedirs(folderDir)
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Write airfoil geometry file (.stl) into "constant/triSurface"')
-    parser.add_argument('airfoil', type=str, help='NACA airfoil digits')
-    parser.add_argument('alpha', type=float, help='Angle of attack [deg]')
-    args = parser.parse_args()
+        stlFileName = "naca" + str(self.foil) + "_" + str(self.angle) + ".stl"
+        saveDir = os.path.join(folderDir, stlFileName)
 
-    # error handling for incorrect parsing of NACA airfoil or AoA
-    if len(args.airfoil) < 4 or len(args.airfoil) > 5:
-        parser.error('Please enter a 4- or 5-digit NACA airfoil.')
-    if np.deg2rad(args.alpha) <= -np.pi / 2 or np.deg2rad(args.alpha) >= np.pi / 2:
-        parser.error('Please enter an angle of attack between ({}, {}) degree.'.format(-90, 90))
-
-    blockMesh = generateGeometryFile(args.airfoil, args.alpha)
+        naca.save(saveDir)

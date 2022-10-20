@@ -13,48 +13,48 @@ the "/system" directory.
 """
 # ---------------------------------------------------------------------------
 
-import argparse
+import os
 import numpy as np
 from scipy.optimize import newton
-from distutils.util import strtobool
 
 class generateBlockMeshDict(object):
-    def __init__(self, baseCellSize):
-        # Domain size
+    def __init__(self, caseDir, baseCellSize):
+        self.caseDir = caseDir
+        self.baseCellSize = baseCellSize
+
         self.xMin = self.xMax = None
         self.zMin = self.zMax = None
         self.yMin = self.yMax = None
 
-        # Mesh parameter
         self.xCells = self.yCells = None
-        self.baseCellSize = baseCellSize
 
         self.setDomainSize()
         self.writeToFile()
 
     def setDomainSize(self, xMin=-10, xMax=30, yMin=-10, yMax=10):
-        # Domain size parameter
         self.xMin = xMin
         self.xMax = xMax
         self.yMin = yMin
         self.yMax = yMax
         self.zMin = - 0.5
-        self.zMax = - 0.49375
+        self.zMax = - round(0.5 - (self.baseCellSize / 2**5), 9)
 
         self.xCells = self.setNumberOfCells(1, abs(self.xMax) + abs(self.xMin), self.baseCellSize)
         self.yCells = self.setNumberOfCells(1, abs(self.yMax) + abs(self.yMin), self.baseCellSize)
 
     def setNumberOfCells(self, ratio, length, deltaS):
         """
+        Calculate number of cells based on expansion ratio and domain length
+
         Parameters
         ----------
-        ratio: total expansion ratio
-        length: length of block edge
-        deltaS: width / height of start cell
+            ratio: total expansion ratio (float)
+            length: length of block edge (float)
+            deltaS: width / height of start cell (float)
 
         Returns
         -------
-        Number of cells as integer value
+            Number of cells as integer value
         """
 
         if ratio > 1:
@@ -70,7 +70,8 @@ class generateBlockMeshDict(object):
                 length / cMin))
 
     def writeToFile(self):
-        f = open('system/blockMeshDict', 'w+')
+        saveDir = os.path.join(self.caseDir, 'system/blockMeshDict')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -178,11 +179,3 @@ class generateBlockMeshDict(object):
         f.write('                                                                                   \n')
         f.write('// ************************************************************************* //    \n')
         f.close()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate blockMeshDict File')
-    parser.add_argument('cellSize', type=float, help='Background mesh cell size')
-    args = parser.parse_args()
-
-    blockMesh = generateBlockMeshDict(baseCellSize=args.cellSize)

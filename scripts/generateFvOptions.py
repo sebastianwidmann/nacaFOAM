@@ -13,13 +13,16 @@ will be written into the "/system" directory.
 """
 # ---------------------------------------------------------------------------
 
+import os
 
 class generateFvOptionsDict(object):
-    def __init__(self):
+    def __init__(self, caseDir):
+        self.caseDir = caseDir
         self.writeToFile()
 
     def writeToFile(self):
-        f = open('system/fvOptions', 'w+')
+        saveDir = os.path.join(self.caseDir, 'system/fvOptions')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -40,14 +43,10 @@ class generateFvOptionsDict(object):
         f.write('limitT                                                                             \n')
         f.write('{                                                                                  \n')
         f.write('   type            limitTemperature;                                               \n')
-        f.write('   min             101;                                                            \n')
-        f.write('   max             1000;                                                           \n')
+        f.write('   min             273.15;                                                         \n')
+        f.write('   max             500;                                                            \n')
         f.write('   selectionMode   all;                                                            \n')
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
         f.write('// ************************************************************************* //    \n')
         f.close()
-
-
-if __name__ == '__main__':
-    generateFvOptionsDict()

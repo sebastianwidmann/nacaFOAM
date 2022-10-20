@@ -13,21 +13,23 @@ the "/system" directory.
 """
 # ---------------------------------------------------------------------------
 
-import argparse
-import numpy as np
-from flowProperties import *
-
+import os
+from scripts.flowProperties import *
 
 class generateSnappyHexMeshDict(object):
-    def __init__(self, airfoil, angle, mach):
+    def __init__(self, caseDir, airfoil, angle, mach, baseCellSize, meshing):
+        self.caseDir = caseDir
         self.airfoil = airfoil
-        self.alpha = angle
+        self.angle = angle
         self.mach = mach
+        self.baseCellSize = baseCellSize
+        self.meshing = meshing
 
         self.writeToFile()
 
     def writeToFile(self):
-        f = open('system/snappyHexMeshDict', 'w+')
+        saveDir = os.path.join(self.caseDir, 'system/snappyHexMeshDict')
+        f = open(saveDir, 'w+')
 
         f.write('/*--------------------------------*- C++ -*----------------------------------*\\   \n')
         f.write('| =========                 |                                                 |    \n')
@@ -45,22 +47,23 @@ class generateSnappyHexMeshDict(object):
         f.write('}                                                                                  \n')
         f.write('// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    \n')
         f.write('                                                                                   \n')
-        if args.meshing == 0:
+        if self.meshing == 0:
             f.write('castellatedMesh    true;                                                       \n')
             f.write('snap               false;                                                      \n')
             f.write('addLayers          false;                                                      \n')
-        elif args.meshing == 1:
+        elif self.meshing == 1:
+            f.write('mergePatchFaces    false;                                                       \n')
             f.write('castellatedMesh    true;                                                       \n')
             f.write('snap               true;                                                       \n')
             f.write('addLayers          false;                                                      \n')
-        elif args.meshing == 2:
+        elif self.meshing == 2:
             f.write('castellatedMesh    false;                                                      \n')
             f.write('snap               false;                                                      \n')
             f.write('addLayers          true;                                                       \n')
         f.write('                                                                                   \n')
         f.write('geometry                                                                           \n')
         f.write('{                                                                                  \n')
-        f.write('   naca{}_{}deg.stl \n'.format(self.airfoil, self.alpha))
+        f.write('   naca{}_{}.stl \n'.format(self.airfoil, self.angle))
         f.write('   {                                                                               \n')
         f.write('       type    triSurfaceMesh;                                                     \n')
         f.write('       name    wing;                                                               \n')
@@ -69,36 +72,36 @@ class generateSnappyHexMeshDict(object):
         f.write('   refinementBox5                                                                  \n')
         f.write('   {                                                                               \n')
         f.write('       type    box;                                                                \n')
-        f.write('       min     (-0.35 -0.25 -0.5);                                                 \n')
-        f.write('       max     ( 0.85  0.25 -0.49375);                                             \n')
+        f.write('       min     (-0.35 -0.3 -0.5);                                                 \n')
+        f.write('       max     ( 0.85  0.3 {}); \n'.format(-round(0.5 - (self.baseCellSize / 2**5), 9)))
         f.write('                                                                                   \n')
         f.write('   }                                                                               \n')
         f.write('   refinementBox4                                                                  \n')
         f.write('   {                                                                               \n')
         f.write('       type    box;                                                                \n')
         f.write('       min     (-0.5 -0.5 -0.5);                                                   \n')
-        f.write('       max     ( 2    0.5 -0.49375);                                               \n')
+        f.write('       max     ( 2    0.5 {}); \n'.format(-round(0.5 - (self.baseCellSize / 2**5), 9)))
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   refinementBox3                                                                  \n')
         f.write('   {                                                                               \n')
         f.write('       type    box;                                                                \n')
         f.write('       min     (-1 -1 -0.5);                                                       \n')
-        f.write('       max     ( 5  1 -0.49375);                                                   \n')
+        f.write('       max     ( 5  1 {}); \n'.format(-round(0.5 - (self.baseCellSize / 2**5), 9)))
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   refinementBox2                                                                  \n')
         f.write('   {                                                                               \n')
         f.write('       type    box;                                                                \n')
         f.write('       min     (-2  -2 -0.5);                                                      \n')
-        f.write('       max     ( 10  2 -0.49375);                                                  \n')
+        f.write('       max     ( 10  2 {}); \n'.format(-round(0.5 - (self.baseCellSize / 2**5), 9)))
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
         f.write('   refinementBox1                                                                  \n')
         f.write('   {                                                                               \n')
         f.write('       type    box;                                                                \n')
         f.write('       min     (-5  -4 -0.5);                                                      \n')
-        f.write('       max     ( 20  4 -0.49375);                                                  \n')
+        f.write('       max     ( 20  4 {}); \n'.format(-round(0.5 - (self.baseCellSize / 2**5), 9)))
         f.write('   }                                                                               \n')
         f.write('}                                                                                  \n')
         f.write('                                                                                   \n')
@@ -111,32 +114,31 @@ class generateSnappyHexMeshDict(object):
         f.write('                                                                                   \n')
         f.write('   features                                                                        \n')
         f.write('   (                                                                               \n')
-        if args.meshing == 1:
+        if self.meshing == 1:
             f.write('       {                                                                       \n')
-            f.write('           file            "naca{}_{}deg.eMesh"; \n'.format(self.airfoil, self.alpha))
+            f.write('           file            "naca{}_{}.eMesh"; \n'.format(self.airfoil, self.angle))
             f.write('           level           0;                                                  \n')
             f.write('       }                                                                       \n')
         f.write('   );                                                                              \n')
         f.write('                                                                                   \n')
         f.write('   refinementSurfaces                                                              \n')
         f.write('   {                                                                               \n')
-        if args.meshing == 1:
+        if self.meshing == 1:
             f.write('       wing                                                                    \n')
             f.write('       {                                                                       \n')
-            f.write('           level           (0 0);                                              \n')
-            # if int(self.airfoil[-2:]) < 10:
-            #     f.write('           level           (3 4);                                          \n')
-            # else:
-            #     f.write('           level           (3 3);                                          \n')
+            if int(self.airfoil[-2:]) < 10:
+                f.write('           level           (0 2);                                          \n')
+            else:
+                f.write('           level           (0 1);                                          \n')
             f.write('       }                                                                       \n')
         f.write('   }                                                                               \n')
         f.write('                                                                                   \n')
-        f.write('   resolveFeatureAngle     30;                                                     \n')
+        f.write('   resolveFeatureAngle     15;                                                     \n')
         f.write('                                                                                   \n')
         f.write('   refinementRegions                                                               \n')
         f.write('   {                                                                               \n')
         f.write('                                                                                   \n')
-        if args.meshing == 0:
+        if self.meshing == 0:
             f.write('                                                                               \n')
             f.write('       refinementBox5                                                          \n')
             f.write('       {                                                                       \n')
@@ -187,7 +189,7 @@ class generateSnappyHexMeshDict(object):
         f.write('   nRelaxIter                  5;                                                  \n')
         f.write('                                                                                   \n')
         f.write('   // Feature snapping                                                             \n')
-        f.write('       nFeatureSnapIter        100;                                                \n')
+        f.write('       nFeatureSnapIter        10;                                                 \n')
         f.write('       implicitFeatureSnap     false;                                              \n')
         f.write('       explicitFeatureSnap     true;                                               \n')
         f.write('       multiRegionFeatureSnap  false;                                              \n')
@@ -219,7 +221,7 @@ class generateSnappyHexMeshDict(object):
         f.write('                                                                                   \n')
         f.write('   nGrow                       0;                                                  \n')
         f.write('                                                                                   \n')
-        f.write('   featureAngle                180;                                                \n')
+        f.write('   featureAngle                150;                                                \n')
         f.write('                                                                                   \n')
         f.write('   nSmoothThickness            10;                                                 \n')
         f.write('                                                                                   \n')
@@ -234,7 +236,7 @@ class generateSnappyHexMeshDict(object):
         f.write('                                                                                   \n')
         f.write('meshQualityControls                                                                \n')
         f.write('{                                                                                  \n')
-        if args.meshing == 0 or args.meshing == 1:
+        if self.meshing == 0 or self.meshing == 1:
             f.write('   maxNonOrtho                 65;                                             \n')
             f.write('   maxBoundarySkewness         20;                                             \n')
             f.write('   maxInternalSkewness         4;                                              \n')
@@ -248,10 +250,10 @@ class generateSnappyHexMeshDict(object):
             f.write('   minFaceWeight               0.05;                                           \n')
             f.write('   minVolRatio                 0.01;                                           \n')
             f.write('   minTriangleTwist            -1;                                             \n')
-        elif args.meshing == 2:
+        elif self.meshing == 2:
             f.write('   maxNonOrtho                 180;                                            \n')
-            f.write('   maxBoundarySkewness         -1;                                             \n')
-            f.write('   maxInternalSkewness         -1;                                             \n')
+            f.write('   maxBoundarySkewness         20;                                             \n')
+            f.write('   maxInternalSkewness         4;                                              \n')
             f.write('   maxConcave                  180;                                            \n')
             f.write('   minVol                      1e-30;                                          \n')
             f.write('   minTetQuality               -1e30;                                          \n')
@@ -271,17 +273,3 @@ class generateSnappyHexMeshDict(object):
         f.write('                                                                                   \n')
         f.write('// ************************************************************************* //    \n')
         f.close()
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate snappyHexMeshDict file and save into "system/blockMeshFile"')
-    parser.add_argument('airfoil', type=str, help='NACA airfoil digits')
-    parser.add_argument('alpha', type=float, help='Angle of attack [deg]')
-    parser.add_argument('mach', type=float, help='Freestream Mach number [-]')
-    parser.add_argument('-meshing', dest='meshing', type=int,
-                        help='integer corresponding to meshing subpart \n 0 = generate refinementRegions w/o geometry '
-                             '1 = generate castellatedMesh plus snapping around airfoil \n '
-                             '2 = generate addLayers around airfoil')
-    args = parser.parse_args()
-
-    generateSnappyHexMeshDict(args.airfoil, args.alpha, args.mach)
