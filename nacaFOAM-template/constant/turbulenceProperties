@@ -10,37 +10,18 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      thermophysicalProperties;
+    object      turbulenceProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-thermoType
+simulationType      RAS;
+
+RAS
 {
-    type            hePsiThermo;
-    mixture         pureMixture;
-    transport       const;
-    thermo          hConst;
-    equationOfState perfectGas;
-    specie          specie;
-    energy          sensibleInternalEnergy;
+    RASModel        kOmegaSST;
+    turbulence      on;
+    printCoeffs     off;
 }
 
-mixture // air at standard ISA conditions
-{
-    specie
-    {
-        molWeight   28.9647;    // [g/mol] molar mass of air
-    }
-    thermodynamics
-    {
-        Cp          1005;       // [J/(kg*K)] specific heat at const. pressure
-        Hf          0;          // [J/g] enthalpy of fusion
-    }
-    transport
-    {
-        mu          1.789e-5;
-        Pr          0.7050764706;
-    }
-}
 
 // ************************************************************************* //

@@ -1,0 +1,51 @@
+/*--------------------------------*- C++ -*----------------------------------*\   
+| =========                 |                                                 |    
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  
+|  \\    /   O peration     | Version:  v2206                                 |  
+|   \\  /    A nd           | Website:  www.openfoam.com                      |  
+|    \\/     M anipulation  |                                                 |  
+\*---------------------------------------------------------------------------*/   
+FoamFile                                                                           
+{                                                                                  
+    version     2.0;                                                               
+    format      ascii;                                                             
+    class       dictionary;                                                        
+    object      forceCoeffs;                                                       
+}                                                                                  
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
+                                                                                   
+forceCoeffs                                                                        
+{                                                                                  
+   type            forceCoeffs;                                                    
+   libs            ("libforces.so");                                               
+   patches         (wall);                                                         
+                                                                                   
+   writeControl    timeStep;                                                       
+   writeInterval   1;                                                              
+   executeControl  timeStep;                                                       
+   executeInterval 1;                                                              
+   timeStart       0;                                                              
+                                                                                   
+   p               p;                                                              
+   U               U;                                                              
+   rho             rho;                                                            
+   pRef            95191.76719990617; 
+   rhoInf          1.1715447678451316; 
+   writeFields     no;                                                             
+   CofR            (0 0 0);                                                        
+   liftDir         (0 1 0);                                                        
+   dragDir         (1 0 0);                                                        
+   pitchAxis       (0 0 1);                                                        
+   magUInf         101.18252730208769; 
+   lRef            1;                                                              
+   Aref            1;                                                              
+                                                                                   
+   binData                                                                         
+   {                                                                               
+       nBin        20;                                                             
+       direction   (1 0 0);                                                        
+       cumulative  yes;                                                            
+   }                                                                               
+}                                                                                  
+                                                                                   
+// ************************************************************************* //    

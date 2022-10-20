@@ -1,7 +1,7 @@
 /*--------------------------------*- C++ -*----------------------------------*\   
 | =========                 |                                                 |    
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  
-|  \\    /   O peration     | Version:  v2112                                 |  
+|  \\    /   O peration     | Version:  v2206                                 |  
 |   \\  /    A nd           | Website:  www.openfoam.com                      |  
 |    \\/     M anipulation  |                                                 |  
 \*---------------------------------------------------------------------------*/   
@@ -20,8 +20,8 @@ domain
    xMax        30; 
    yMin        -10; 
    yMax        10; 
-   zMin        -0.1; 
-   zMax        0.1; 
+   zMin        -0.5; 
+   zMax        -0.49375; 
 }                                                                                  
                                                                                    
 vertices                                                                           
@@ -40,7 +40,7 @@ vertices
 blocks                                                                             
 (                                                                                  
    hex (0 1 2 3 4 5 6 7)                                                           
-   (400 200 1) 
+   (200 100 1) 
    simpleGrading (1 1 1)                                                           
 );                                                                                 
                                                                                    
@@ -83,18 +83,18 @@ boundary
        );                                                                          
    }                                                                               
                                                                                    
-   back                                                                            
+   symBack                                                                         
    {                                                                               
-       type empty;                                                                 
+       type symmetryPlane;                                                         
        faces                                                                       
        (                                                                           
            (0 1 2 3)                                                               
        );                                                                          
    }                                                                               
                                                                                    
-   front                                                                           
+   symFront                                                                        
    {                                                                               
-       type empty;                                                                 
+       type symmetryPlane;                                                         
        faces                                                                       
        (                                                                           
            (4 5 6 7)                                                               
