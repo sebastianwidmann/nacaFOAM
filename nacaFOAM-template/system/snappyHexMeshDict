@@ -1,0 +1,191 @@
+/*--------------------------------*- C++ -*----------------------------------*\   
+| =========                 |                                                 |    
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |  
+|  \\    /   O peration     | Version:  v2206                                 |  
+|   \\  /    A nd           | Website:  www.openfoam.com                      |  
+|    \\/     M anipulation  |                                                 |  
+\*---------------------------------------------------------------------------*/   
+FoamFile                                                                           
+{                                                                                  
+    version     2.0;                                                               
+    format      ascii;                                                             
+    class       dictionary;                                                        
+    object      snappyHexMeshDict;                                                 
+}                                                                                  
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //    
+                                                                                   
+castellatedMesh    true;                                                       
+snap               false;                                                      
+addLayers          false;                                                      
+                                                                                   
+geometry                                                                           
+{
+   refinementBox5                                                                  
+   {                                                                               
+       type    box;                                                                
+       min     (-0.35 -0.3 -0.5);                                                 
+       max     ( 0.85  0.3 -0.49375); 
+                                                                                   
+   }                                                                               
+   refinementBox4                                                                  
+   {                                                                               
+       type    box;                                                                
+       min     (-0.5 -0.5 -0.5);                                                   
+       max     ( 2    0.5 -0.49375); 
+   }                                                                               
+                                                                                   
+   refinementBox3                                                                  
+   {                                                                               
+       type    box;                                                                
+       min     (-1 -1 -0.5);                                                       
+       max     ( 5  1 -0.49375); 
+   }                                                                               
+                                                                                   
+   refinementBox2                                                                  
+   {                                                                               
+       type    box;                                                                
+       min     (-2  -2 -0.5);                                                      
+       max     ( 10  2 -0.49375); 
+   }                                                                               
+                                                                                   
+   refinementBox1                                                                  
+   {                                                                               
+       type    box;                                                                
+       min     (-5  -4 -0.5);                                                      
+       max     ( 20  4 -0.49375); 
+   }                                                                               
+}                                                                                  
+                                                                                   
+castellatedMeshControls                                                            
+{                                                                                  
+   maxLocalCells           1e5;                                                    
+   maxGlobalCells          2e6;                                                    
+   minRefinementCells      10;                                                     
+   nCellsBetweenLevels     5;                                                      
+                                                                                   
+   features                                                                        
+   (                                                                               
+   );                                                                              
+                                                                                   
+   refinementSurfaces                                                              
+   {                                                                               
+   }                                                                               
+                                                                                   
+   resolveFeatureAngle     15;                                                     
+                                                                                   
+   refinementRegions                                                               
+   {
+       refinementBox5                                                          
+       {                                                                       
+           mode    inside;                                                     
+           levels  ((1e15 0));                                                 
+           levelIncrement  (0 0 (5 5 0));                                      
+       }                                                                       
+                                                                               
+       refinementBox4                                                          
+       {                                                                       
+           mode    inside;                                                     
+           levels  ((1e15 0));                                                 
+           levelIncrement  (0 0 (4 4 0));                                      
+       }                                                                       
+                                                                               
+       refinementBox3                                                          
+       {                                                                       
+           mode    inside;                                                     
+           levels  ((1e15 0));                                                 
+           levelIncrement  (0 0 (3 3 0));                                      
+       }                                                                       
+                                                                               
+       refinementBox2                                                          
+       {                                                                       
+           mode    inside;                                                     
+           levels  ((1e15 0));                                                 
+           levelIncrement  (0 0 (2 2 0));                                      
+       }                                                                       
+                                                                               
+       refinementBox1                                                          
+       {                                                                       
+           mode    inside;                                                     
+           levels  ((1e15 0));                                                 
+           levelIncrement  (0 0 (1 1 0));                                      
+       }                                                                       
+   }                                                                               
+                                                                                   
+   locationInMesh (-7.4999 7.4999 -0.499);                                         
+                                                                                   
+   allowFreeStandingZoneFaces  false;                                              
+}                                                                                  
+                                                                                   
+snapControls                                                                       
+{                                                                                  
+   nSmoothPatch                3;                                                  
+   tolerance                   1.0;                                                
+   nSolveIter                  30;                                                 
+   nRelaxIter                  5;                                                  
+                                                                                   
+   // Feature snapping                                                             
+       nFeatureSnapIter        10;                                                 
+       implicitFeatureSnap     false;                                              
+       explicitFeatureSnap     true;                                               
+       multiRegionFeatureSnap  false;                                              
+}                                                                                  
+                                                                                   
+addLayersControls                                                                  
+{                                                                                  
+   meshShrinker                displacementMotionSolver;                           
+                                                                                   
+   solver                      displacementLaplacian;                              
+                                                                                   
+   displacementLaplacianCoeffs                                                     
+   {                                                                               
+       diffusivity             quadratic inverseDistance 1(wall);                  
+   }                                                                               
+                                                                                   
+   layers                                                                          
+   {
+   }                                                                               
+                                                                                   
+   relativeSizes               false;                                              
+   expansionRatio              1.2;                                                
+   firstLayerThickness         0.00022308428424291427; 
+   minThickness                1e-12;                                              
+                                                                                   
+   nGrow                       0;                                                  
+                                                                                   
+   featureAngle                150;                                                
+                                                                                   
+   nSmoothThickness            10;                                                 
+                                                                                   
+   maxFaceThicknessRatio       0.5;                                                
+                                                                                   
+   nBufferCellsNoExtrude       0;                                                  
+                                                                                   
+   nLayerIter                  50;                                                 
+                                                                                   
+   nRelaxIter                  5;                                                  
+}                                                                                  
+                                                                                   
+meshQualityControls                                                                
+{                                                                                  
+   maxNonOrtho                 65;                                             
+   maxBoundarySkewness         20;                                             
+   maxInternalSkewness         4;                                              
+   maxConcave                  80;                                             
+   minFlatness                 0.5;                                            
+   minVol                      1e-13;                                          
+   minTetQuality               1e-13;                                          
+   minArea                     -1;                                             
+   minTwist                    0.05;                                           
+   minDeterminant              0.001;                                          
+   minFaceWeight               0.05;                                           
+   minVolRatio                 0.01;                                           
+   minTriangleTwist            -1;                                             
+                                                                                   
+   // Advanced settings                                                            
+   nSmoothScale                4;                                                  
+   errorReduction              0.75;                                               
+}                                                                                  
+                                                                                   
+mergeTolerance 1e-6;                                                               
+                                                                                   
+// ************************************************************************* //    
