@@ -4,7 +4,6 @@ nacaFOAM-template/constant/extendedFeatureEdgeMesh/
 nacaFOAM-template/constant/polyMesh/
 nacaFOAM-template/constant/triSurface/
 0/
-nacaFOAM-template/0.org/
 processor*/
 
 nacaFOAM-template/system/foForceCoeffs
