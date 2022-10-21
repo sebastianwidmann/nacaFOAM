@@ -8,7 +8,10 @@ attack `alpha = [-20, 20] deg`.
 
 ## Dependencies
 
-* OpenFOAM v2112  or newer
+* OpenFOAM v2112 or newer
 * Python 3.10 or newer
 * NumPy 1.22.4 or newer
 * matplotlib 3.5.2 or newer
+
+## Running
+Before running the database, execute `source /lib/openfoam/openfoam2206/etc/bashrc` in the terminal
