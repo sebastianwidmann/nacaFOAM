@@ -90,7 +90,7 @@ def runCase(naca, angle, mach):
     cwd = os.getcwd()
 
     templateCase = SolutionDirectory("nacaFOAM-template", archive=None, paraviewLink=False)
-    newCase = "naca" + str(naca) + "_" + str(angle) + "_" + str(mach)
+    newCase = str(naca) + "_" + str(angle) + "_" + str(mach)
     case = templateCase.cloneCase(newCase)
     os.chdir(case.name) # move to case directory to avoid OpenFOAM error of not finding controlDict
 
@@ -258,7 +258,7 @@ def runCase(naca, angle, mach):
     sourceDir = os.path.join(case.name, newCase)
     targetDir = os.path.join(databaseDir, newCase)
 
-    shutil.move(os.path.join(case.name, "postProcessing/forceCoeffs/0/coefficient.dat"), os.path.join(sourceDir, "{}_forceCoeffs.dat".format(newCase)))
+    shutil.copy(os.path.join(case.name, "postProcessing/forceCoeffs/0/coefficient.dat"), os.path.join(sourceDir, "{}_forceCoeffs.dat".format(newCase)))
 
     copytree(sourceDir, targetDir)
 
