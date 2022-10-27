@@ -1,0 +1,116 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2206                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fieldAverage;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+fieldAverage
+{
+    type            fieldAverage;
+    libs            (fieldFunctionObjects);
+
+    fields
+    (
+        U
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        p
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        T
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        rho
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        k
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        omega
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        nut
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+        alphat
+        {
+            mean            yes;
+            prime2Mean      no;
+            base            iteration;
+            windowType      exact;
+            window          100;
+            allowRestart    false;
+        }
+
+    );
+
+    region          region0;
+    enabled         true;
+    log             true;
+    timeStart       0;
+    timeEnd         10000;
+    executeControl  timeStep;
+    executeInterval 1;
+    writeControl    outputTime;
+}
+
+// ************************************************************************* //
