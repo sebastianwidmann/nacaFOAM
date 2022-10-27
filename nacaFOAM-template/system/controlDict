@@ -47,8 +47,8 @@ runTimeModifiable  true;
 functions
 {
     #include "foForceCoeffs"
-    //#include "foPressureCoeffs"
     #include "foRunTimeControl"
+    #include "foFieldAverage"
     #include "foYPlus"
 }
                                                                                    
