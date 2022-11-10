@@ -12,7 +12,9 @@
 # ---------------------------------------------------------------------------
 import numpy as np
 import subprocess
-import os, psutil, shutil
+import os
+import psutil
+import shutil
 import itertools
 import multiprocessing
 
@@ -21,7 +23,6 @@ from datetime import datetime
 from PyFoam.RunDictionary.SolutionDirectory import SolutionDirectory
 from PyFoam.Execution.UtilityRunner import UtilityRunner
 from PyFoam.Execution.BasicRunner import BasicRunner
-from PyFoam.Error import error
 from PyFoam.Basics.Utilities import copytree
 from PyFoam.Execution.ParallelExecution import LAMMachine
 
