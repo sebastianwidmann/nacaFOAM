@@ -41,6 +41,6 @@ for case in databaseList:
             i += 1
 
 saveDir = os.path.join(databaseDir, "nacaFOAM_Cl_Cd_Cm.csv")
-df.to_csv(saveDir, sep='\t')
+df.to_csv(saveDir, sep='\t', index=None)
 
 print('Post processing completed! Lift-drag data saved into: {}'.format(saveDir))
