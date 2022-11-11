@@ -31,7 +31,12 @@ The pregenerated database for machine learning can be found here (LINK TO DATABA
 * To execute the main script `nacaFOAM.py`, one has to enter the OpenFOAM environment or source toward the bashrc script
     * **Ubuntu**: `source /lib/openfoam/openfoam2206/etc/bashrc`
 
-### 2.3 Running parameters & core count settings
+### 2.3 Set Python environment on HPC systems
+* Typically, Python is installed in the `usr/bin/python3.XX` directory on local Linux machines. However, this is often not true for HPC systems.
+  * By default, `nacaFOAM.py` will look for the executable of Python in the following directory -> `usr/bin/python3`
+  * If a virtual environment is used, the directory to the Python executable must be specified in the `shebang line` in line 1 of `nacaFOAM.py`
+
+### 2.4 Running parameters & core count settings
 
 * To execute the main script, 3 parameters must be provided in the form of a parameter list (see line 347
   in `nacaFOAM.py`)
@@ -48,7 +53,7 @@ The pregenerated database for machine learning can be found here (LINK TO DATABA
 * `nacaFOAM.py`: the argument `nr` in line 254,
 * `nacaFOAM-template/system/decomposeParDict`: modify the argument `numberOfSubdomains` in line 17
 
-### 2.4 Run multiple simulations
+### 2.5 Run multiple simulations
 
 * Specify range of angles of attack as `list` or `array` of **strings** in line 343
     *     angles = np.arange(-5, 21, 1)
@@ -61,7 +66,7 @@ The pregenerated database for machine learning can be found here (LINK TO DATABA
             * NACA 5-series --> see lines 58-61
 * Execute `nacaFOAM.py` script
 
-### 2.5 Run single simulation
+### 2.6 Run single simulation
 
 * Easiest way to run a single simulation is by replacing lines 343-345 with the following lines
     *     angles = np.array([0])
@@ -69,7 +74,7 @@ The pregenerated database for machine learning can be found here (LINK TO DATABA
     *     nacas = ['0012']
 * Execute `nacaFOAM.py` script
 
-### 2.6 Postprocessing
+### 2.7 Postprocessing
 
 * To generate the textfile with the lift, drag and moment coefficients for all simulations, simply execute
   the `postProcessing.py` script after the `nacaFOAM.py` script has been executed sucessfully. This script will generate
