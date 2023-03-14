@@ -13,3 +13,12 @@ nacaFOAM-template/system/surfaceFeatureExtractDict
 
 naca0012-mesh-independence-study/
 naca0012-validation/
+
+/.idea/.gitignore
+/.idea/codeStyles/codeStyleConfig.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/nacaFOAM.iml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
