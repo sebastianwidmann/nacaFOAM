@@ -18,7 +18,6 @@ import numpy as np
 import os
 from stl import mesh
 
-
 class generateGeometryFile(object):
     def __init__(self, caseDir, airfoil, angle):
         self.caseDir = str(caseDir)
@@ -85,7 +84,7 @@ class generateGeometryFile(object):
             y_t = 5 * self.t * (
                     a0 * np.sqrt(x) + a1 * x + a2 * np.power(x, 2) + a3 * np.power(x, 3) + a4 * np.power(x, 4))
 
-            # Values for constants r, k1, k2/k1
+            # Values for constants r, k1, k2/k1 at Cl = 0.3
             digits = np.array([10, 20, 30, 40, 50, 21, 31, 41, 51])
             r_values = np.array([0.0580, 0.1260, 0.2025, 0.2900, 0.3910, 0.1300, 0.2170, 0.3180, 0.4410])
             k1_values = np.array([361.400, 51.640, 15.957, 6.643, 3.230, 51.990, 15.793, 6.520, 3.191])
@@ -97,19 +96,20 @@ class generateGeometryFile(object):
             k1 = k1_values[index]
             k2k1 = k2k1_values[index]
 
-            # Calculate mean camber line
+            # Calculate mean camber line and linearly scale camber and gradient with the designed coefficient of lift
+            Cl = 0.3
             if self.q == 0:
-                y_c = np.where(x < r, k1 / 6 * (np.power(x, 3) - 3 * r * np.power(x, 2) + np.power(r, 2) * x * (3 - r)),
+                y_c = self.m / Cl * np.where(x < r, k1 / 6 * (np.power(x, 3) - 3 * r * np.power(x, 2) + np.power(r, 2) * x * (3 - r)),
                                k1 * np.power(r, 3) / 6 * (1 - x))
-                dy_c = np.where(x < r, k1 / 6 * (3 * np.power(x, 2) - 6 * r * x + (3 - r) * np.power(r, 2)),
+                dy_c = self.m / Cl * np.where(x < r, k1 / 6 * (3 * np.power(x, 2) - 6 * r * x + (3 - r) * np.power(r, 2)),
                                 -k1 * np.power(r, 3) / 6)
             else:
-                y_c = np.where(x < r, k1 / 6 * (
+                y_c = self.m / Cl * np.where(x < r, k1 / 6 * (
                         np.power(x - r, 3) - k2k1 * x * np.power(1 - r, 3) - x * np.power(r, 3) + np.power(r, 3)),
                                k1 / 6 * (k2k1 * np.power(x - r, 3) - k2k1 * x * np.power(1 - r, 3) - x * np.power(r,
                                                                                                                   3) + np.power(
                                    r, 3)))
-                dy_c = np.where(x < r, k1 / 6 * (3 * np.power(x - r, 2) - k2k1 * np.power(1 - r, 3) - np.power(r, 3)),
+                dy_c = self.m / Cl * np.where(x < r, k1 / 6 * (3 * np.power(x - r, 2) - k2k1 * np.power(1 - r, 3) - np.power(r, 3)),
                                 k1 / 6 * (3 * k2k1 * np.power(x - r, 2) - k2k1 * np.power(1 - r, 3) - np.power(r, 3)))
 
         theta = np.arctan(dy_c)
