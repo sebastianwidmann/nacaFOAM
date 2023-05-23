@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------
 # Created By  : Sebastian Widmann
 # Institution : TU Munich, Department of Aerospace and Geodesy
@@ -16,7 +14,7 @@ the "/system" directory..
 import argparse
 import subprocess
 import numpy as np
-import generateStlFile
+
 from flowProperties import *
 
 
@@ -183,18 +181,6 @@ class generateMeshDict(object):
         f.write('           newName top;                                                            \n')
         f.write('           type    patch;                                                          \n')
         f.write('       }                                                                           \n')
-        # f.write('                                                                                   \n')
-        # f.write('       "zMin"                                                                      \n')
-        # f.write('       {                                                                           \n')
-        # f.write('           newName back;                                                           \n')
-        # f.write('           type    empty;                                                          \n')
-        # f.write('       }                                                                           \n')
-        # f.write('                                                                                   \n')
-        # f.write('       "zMax"                                                                      \n')
-        # f.write('       {                                                                           \n')
-        # f.write('           newName front;                                                          \n')
-        # f.write('           type    empty;                                                          \n')
-        # f.write('       }                                                                           \n')
         f.write('                                                                                   \n')
         f.write('       "patch0"                                                                    \n')
         f.write('       {                                                                           \n')

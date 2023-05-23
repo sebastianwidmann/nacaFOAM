@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------
 # Created By  : Sebastian Widmann
 # Institution : TU Munich, Department of Aerospace and Geodesy
@@ -14,6 +12,7 @@ the "/system" directory.
 # ---------------------------------------------------------------------------
 
 import os
+
 from scripts.flowProperties import *
 
 class generateSnappyHexMeshDict(object):

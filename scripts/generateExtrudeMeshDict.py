@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------
 # Created By  : Sebastian Widmann
 # Institution : TU Munich, Department of Aerospace and Geodesy
