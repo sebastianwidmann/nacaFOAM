@@ -1,14 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # ----------------------------------------------------------------------------
 # Created By  : Sebastian Widmann
 # Institution : TU Munich, Department of Aerospace and Geodesy
 # Created Date: October 9, 2022
 # version ='1.0'
-# ---------------------------------------------------------------------------
-"""
-
-"""
 # ---------------------------------------------------------------------------
 import numpy as np
 import subprocess
@@ -27,7 +21,8 @@ from PyFoam.Basics.Utilities import copytree
 from PyFoam.Execution.ParallelExecution import LAMMachine
 
 from scripts.generateStlFile import generateGeometryFile
-from scripts.generateSurfaceFeatureExtractDict import generateSurfaceFeatureExtractDict
+from scripts.generateSurfaceFeatureExtractDict import \
+    generateSurfaceFeatureExtractDict
 from scripts.generateBlockMeshDict import generateBlockMeshDict
 from scripts.generateSnappyHexMeshDict import generateSnappyHexMeshDict
 from scripts.generateFvOptions import generateFvOptionsDict
@@ -70,34 +65,6 @@ def generateNacaAirfoils():
 
     return naca4 + naca5
 
-
-def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
-    '''
-        Call in a loop to create terminal progress bar
-    Parameters
-    ----------
-    iteration: current iteration [int]
-    total: total iteration [int]
-    prefix: prefix string [str]
-    suffix: suffix string [str]
-    decimals: positive number of decimals in percent complete [int]
-    length: character length of bar [int]
-    fill:bar fill character [str]
-    printEnd: end character (e.g. "\r", "\r\n") [str]
-
-    Returns
-    -------
-
-    '''
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    print(f'\r{prefix} |{bar}| {percent}% {suffix}', end=printEnd)
-    # Print New Line on Complete
-    if iteration == total:
-        print()
-
-
 def deleteTempMeshFiles(meshDir):
     '''
         Function will delete mesh related files which can cause
@@ -115,7 +82,6 @@ def deleteTempMeshFiles(meshDir):
     subprocess.run(["rm", "-f", os.path.join(meshDir, "level0Edge")])
     subprocess.run(["rm", "-f", os.path.join(meshDir, "pointLevel")])
     subprocess.run(["rm", "-f", os.path.join(meshDir, "surfaceIndex")])
-
 
 def deletePyFoamTempFiles(newCase):
     '''
@@ -144,19 +110,20 @@ def runCase(args):
 
     cwd = os.getcwd()
 
-    templateCase = SolutionDirectory("nacaFOAM-template", archive=None, paraviewLink=False)
+    templateCase = SolutionDirectory("nacaFOAM-template", archive=None,
+                                     paraviewLink=False)
     newCase = str(naca) + "_" + str(angle) + "_" + str(mach)
     case = templateCase.cloneCase(newCase)
-    os.chdir(case.name)  # move to case directory to avoid OpenFOAM error of not finding controlDict
-
-    print('Starting {}'.format(newCase))
+    os.chdir(case.name)  # move to case directory to avoid OpenFOAM error of not
+                    # finding controlDict
 
     # ----- generate geometry -----
     generateGeometryFile(case.name, naca, angle)
     generateSurfaceFeatureExtractDict(case.name, naca, angle)
 
-    surfaceFeatureExtract = BasicRunner(argv=['surfaceFeatureExtract', "-case", case.name], silent=True,
-                                        logname="surfaceFeatureExtract")
+    surfaceFeatureExtract = BasicRunner(
+        argv=['surfaceFeatureExtract', "-case", case.name], silent=True,
+        logname="surfaceFeatureExtract")
     surfaceFeatureExtract.start()
     if surfaceFeatureExtract.runOK():
         subprocess.run(["rm", "-f", "surfaceFeatureExtract.logfile"])
@@ -171,7 +138,8 @@ def runCase(args):
         # ----- blockMesh -----
         generateBlockMeshDict(case.name, baseCellSize)
 
-        blockMesh = BasicRunner(argv=["blockMesh", "-case", case.name], silent=True, logname="blockMesh")
+        blockMesh = BasicRunner(argv=["blockMesh", "-case", case.name],
+                                silent=True, logname="blockMesh")
         blockMesh.start()
         if blockMesh.runOK():
             subprocess.run(["rm", "-f", "blockMesh.logfile"])
@@ -183,8 +151,9 @@ def runCase(args):
         # ----- snappyHexMesh -----
         generateSnappyHexMeshDict(case.name, naca, angle, mach, baseCellSize, 0)
 
-        snappyHexMesh_0 = BasicRunner(argv=["snappyHexMesh", "-case", case.name, "-overwrite"], silent=True,
-                                      logname="sHM_0")
+        snappyHexMesh_0 = BasicRunner(
+            argv=["snappyHexMesh", "-case", case.name, "-overwrite"],
+            silent=True, logname="sHM_0")
         snappyHexMesh_0.start()
         if snappyHexMesh_0.runOK():
             subprocess.run(["rm", "-f", "sHM_0.logfile"])
@@ -197,8 +166,9 @@ def runCase(args):
 
     generateSnappyHexMeshDict(case.name, naca, angle, mach, baseCellSize, 1)
 
-    snappyHexMesh_1 = BasicRunner(argv=["snappyHexMesh", "-case", case.name, "-overwrite"], silent=True,
-                                  logname="sHM_1")
+    snappyHexMesh_1 = BasicRunner(
+        argv=["snappyHexMesh", "-case", case.name, "-overwrite"], silent=True,
+        logname="sHM_1")
     snappyHexMesh_1.start()
     if snappyHexMesh_1.runOK():
         subprocess.run(["rm", "-f", "sHM_1.logfile"])
@@ -213,8 +183,9 @@ def runCase(args):
     fvOptionsDir = os.path.join(case.name, "system/fvOptions")
     subprocess.run(["rm", "-f", fvOptionsDir])
 
-    snappyHexMesh_2 = BasicRunner(argv=["snappyHexMesh", "-case", case.name, "-overwrite"], silent=True,
-                                  logname="sHM_2")
+    snappyHexMesh_2 = BasicRunner(
+        argv=["snappyHexMesh", "-case", case.name, "-overwrite"], silent=True,
+        logname="sHM_2")
     snappyHexMesh_2.start()
     if snappyHexMesh_2.runOK():
         subprocess.run(["rm", "-f", "sHM_2.logfile"])
@@ -224,7 +195,8 @@ def runCase(args):
         return '{}_sHM2'.format(newCase)
 
     # ----- extrudeMesh -----
-    extrudeMesh = BasicRunner(argv=["extrudeMesh", "-case", case.name], silent=True, logname="extrudeMesh")
+    extrudeMesh = BasicRunner(argv=["extrudeMesh", "-case", case.name],
+                              silent=True, logname="extrudeMesh")
     extrudeMesh.start()
     if extrudeMesh.runOK():
         subprocess.run(["rm", "-f", "extrudeMesh.logfile"])
@@ -234,8 +206,9 @@ def runCase(args):
         return '{}_eM'.format(newCase)
 
     # ----- createPatch -----
-    createPatch = BasicRunner(argv=["createPatch", "-case", case.name, "-overwrite"], silent=True,
-                              logname="createPatch")
+    createPatch = BasicRunner(
+        argv=["createPatch", "-case", case.name, "-overwrite"], silent=True,
+        logname="createPatch")
     createPatch.start()
     if createPatch.runOK():
         subprocess.run(["rm", "-f", "createPatch.logfile"])
@@ -245,8 +218,9 @@ def runCase(args):
         return '{}_cP'.format(newCase)
 
     # ----- renumberMesh -----
-    renumberMesh = BasicRunner(argv=["renumberMesh", "-case", case.name, "-overwrite"], silent=True,
-                               logname="renumberMesh")
+    renumberMesh = BasicRunner(
+        argv=["renumberMesh", "-case", case.name, "-overwrite"], silent=True,
+        logname="renumberMesh")
     renumberMesh.start()
     if renumberMesh.runOK():
         subprocess.run(["rm", "-f", "renumberMesh.logfile"])
@@ -256,7 +230,9 @@ def runCase(args):
         return '{}_rM'.format(newCase)
 
     # ----- checkMesh -----
-    checkMesh = BasicRunner(argv=["checkMesh", "-case", case.name, "-latestTime"], silent=True, logname="checkMesh")
+    checkMesh = BasicRunner(
+        argv=["checkMesh", "-case", case.name, "-latestTime"], silent=True,
+        logname="checkMesh")
     checkMesh.start()
     if not checkMesh.runOK():
         deletePyFoamTempFiles(newCase)
@@ -272,7 +248,8 @@ def runCase(args):
     copytree(os.path.join(case.name, "0.org"), os.path.join(case.name, "0"))
 
     # ----- decomposePar -----
-    decomposePar = UtilityRunner(argv=["decomposePar"], silent=True, logname="decomposePar")
+    decomposePar = UtilityRunner(argv=["decomposePar"], silent=True,
+                                 logname="decomposePar")
     decomposePar.start()
     if decomposePar.runOK():
         subprocess.run(["rm", "-f", "decomposePar.logfile"])
@@ -283,7 +260,8 @@ def runCase(args):
 
     # ----- rhoSimpleFoam -----
     machine = LAMMachine(nr=4)
-    rhoSimpleFoam = BasicRunner(argv=[solver, "-case", case.name], silent=True, lam=machine, logname="rhoSimpleFoam")
+    rhoSimpleFoam = BasicRunner(argv=[solver, "-case", case.name], silent=True,
+                                lam=machine, logname="rhoSimpleFoam")
     rhoSimpleFoam.start()
     if not rhoSimpleFoam.runOK():
         deletePyFoamTempFiles(newCase)
@@ -291,7 +269,8 @@ def runCase(args):
         return '{}_solver'.format(newCase)
 
     # ----- reconstructPar -----
-    reconstructPar = UtilityRunner(argv=["reconstructPar"], silent=True, logname="reconstructPar")
+    reconstructPar = UtilityRunner(argv=["reconstructPar"], silent=True,
+                                   logname="reconstructPar")
     reconstructPar.start()
     if reconstructPar.runOK():
         subprocess.run(["rm", "-f", "reconstructPar.logfile"])
@@ -301,9 +280,10 @@ def runCase(args):
         return '{}_rP'.format(newCase)
 
     # ----- foamToVTK -----
-    foamToVTK = BasicRunner(argv=["foamToVTK", "-latestTime", "-no-boundary", "-fields",
-                                  "'(TMean UMean alphatMean kMean nutMean omegaMean pMean rhoMean)'", "-overwrite",
-                                  "-name", newCase], silent=True, logname="foamToVTK")
+    foamToVTK = BasicRunner(
+        argv=["foamToVTK", "-latestTime", "-no-boundary", "-fields",
+              "'(TMean UMean alphatMean kMean nutMean omegaMean pMean rhoMean)'",
+              "-overwrite", "-name", newCase], silent=True, logname="foamToVTK")
     foamToVTK.start()
     if foamToVTK.runOK():
         subprocess.run(["rm", "-f", "foamToVTK.logfile"])
@@ -318,8 +298,10 @@ def runCase(args):
     targetDir = os.path.join(databaseDir, newCase)
 
     try:
-        shutil.copy(os.path.join(case.name, "postProcessing/forceCoeffs/0/coefficient.dat"),
-                    os.path.join(sourceDir, "{}_forceCoeffs.dat".format(newCase)))
+        shutil.copy(os.path.join(case.name,
+                                 "postProcessing/forceCoeffs/0/coefficient.dat"),
+                    os.path.join(sourceDir,
+                                 "{}_forceCoeffs.dat".format(newCase)))
     except FileNotFoundError:
         pass
 
@@ -340,7 +322,7 @@ def main():
     if not os.path.exists(databaseDir):
         os.makedirs(databaseDir)
 
-    angles = np.arange(-5, 21, 1)
+    angles = np.arange(-5, 16, 1)
     machs = np.arange(0.05, 0.65, 0.05)
     nacas = generateNacaAirfoils()
     paramlist = list(itertools.product(nacas, angles, np.round(machs, 9)))
