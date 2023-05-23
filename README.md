@@ -10,21 +10,32 @@ only predict separation.
 The detailed explanation about the simulation pipeline as well as the performed verification and validation can be found
 here (LINK TO PAPER).
 
-## 1. Machine Learning Database
+To reference this dataset and algorithm, please cite the repository as:
+```
+@misc{widmann2023nacaFOAM,
+  title={Automated Aerodynamic 2D Data Generation for Machine Learning},
+  author={Widmann, Sebastian and Schlichter, Philipp and Reck, Michaela and Indinger, Thomas},
+  year={2023},
+  publisher={GitHub},
+  howpublished={\url{https://github.com/sebastianwidmann/nacaFOAM}},
+}
+```
 
-The pregenerated database for machine learning can be found here (LINK TO DATABASE)
+## 1. Machine Learning Dataset
+
+The dataset *airfoilMNIST* is currently not yet available for download - 
+will be added soon. If you are interested to use the dataset, please contact 
+Sebastian Widmann. The dataset is currently available in a raw data format 
+(~4TB) or as TFDS dataset (~500GB).
+
+The link to download airfoilMNIST will be added soon.
 
 ## 2. Running
 
 ### 2.1 Dependencies
 
 * OpenFOAM v2206 or newer
-* Python 3.10 or newer
-* NumPy 1.22.4 or newer
-* Scipy 1.9.3 or newer
-* PyFoam 2022.9 or newer
-* numpy-stl 2.17.1 or newer
-* psutil 5.9.3 or newer
+* Python packages as set in *requirements.txt*
 
 ### 2.2 Set OpenFOAM environment
 
