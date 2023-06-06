@@ -25,12 +25,10 @@ To reference this dataset and algorithm, please cite the repository as:
 
 ## 1. Machine Learning Dataset
 
-The dataset *airfoilMNIST* is currently not yet available for download - 
-will be added soon. If you are interested to use the dataset, please contact 
-Sebastian Widmann. The dataset is currently available in a raw data format 
-(~4TB) or as TFDS dataset (~500GB).
-
-The link to download airfoilMNIST will be added soon.
+The subsets of the *airfoilMNIST* datasets are subsequently linked here once the data has been published.
+* airfoilMNIST-raw: Not uploaded yet
+* airfoilMNIST: Not uploaded yet
+* airfoilMNIST-incompressible: https://syncandshare.lrz.de/getlink/fiHGg7CzJ1tajtpDxwR65D/
 
 ## 2. Running
 
