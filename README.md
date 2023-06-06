@@ -12,7 +12,7 @@ separation.
 The detailed explanation about the simulation pipeline as well as the 
 performed verification and validation can be found here (LINK TO PAPER).
 
-To reference this dataset and algorithm, please cite the repository as:
+To reference this algorithm, please cite the repository as:
 ```
 @misc{widmann2023nacaFOAM,
   title={Automated Aerodynamic 2D Data Generation for Machine Learning},
@@ -23,14 +23,14 @@ To reference this dataset and algorithm, please cite the repository as:
 }
 ```
 
-## 1. Machine Learning Dataset
+## 1. AirfoilMNIST: A Large-Scale Dataset based on Two-Dimensional RANS Simulations of Airfoils
 
 The subsets of the *airfoilMNIST* datasets are subsequently linked here once the data has been published.
 * airfoilMNIST-raw: Not uploaded yet
 * airfoilMNIST: Not uploaded yet
 * airfoilMNIST-incompressible: https://syncandshare.lrz.de/getlink/fiHGg7CzJ1tajtpDxwR65D/
 
-## 2. Running
+## 2. Running the nacaFOAM pipeline
 
 ### 2.1 Dependencies
 
