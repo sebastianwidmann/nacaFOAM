@@ -25,10 +25,8 @@ To reference this algorithm, please cite the repository as:
 
 ## 1. AirfoilMNIST: A Large-Scale Dataset based on Two-Dimensional RANS Simulations of Airfoils
 
-The subsets of the *airfoilMNIST* datasets are subsequently linked here once the data has been published.
-* airfoilMNIST-raw: https://web.tresorit.com/l/caxBx#uO5w7Q1BS6g1SvDAsrdyVA (currently a snippet (10% of the total dataset), containing all airfoils and angles of attack for Mach = 0.2 - more will be added asap)
-* airfoilMNIST: Not uploaded yet
-* airfoilMNIST-incompressible: https://syncandshare.lrz.de/getlink/fiHGg7CzJ1tajtpDxwR65D/
+The full publication of the *airfoilMNIST* dataset can be accessed through the mediaTUM servers.
+- https://mediatum.ub.tum.de/604993?query=widmann+sebastian&show_id=1712519&srcnodeid=604993
 
 ## 2. Running the nacaFOAM pipeline
 
