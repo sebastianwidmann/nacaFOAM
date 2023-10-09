@@ -28,6 +28,18 @@ To reference this algorithm, please cite the repository as:
 The full publication of the *airfoilMNIST* dataset can be accessed through the mediaTUM servers.
 - https://mediatum.ub.tum.de/604993?query=widmann+sebastian&show_id=1712519&srcnodeid=604993
 
+To reference the corresponding dataset, cite the dataset as:
+```
+@misc{widmann2023nacaFOAM,
+  title={AirfoilMNIST: A Large-Scale Dataset based on Two-Dimensional RANS Simulations of Airfoils},
+  author={Widmann, Sebastian and Schlichter, Philipp and Reck, Michaela and Indinger, Thomas},
+  year={2023},
+  publisher={mediaTUM},
+  doi={doi:10.14459/2023mp1712519},
+  howpublished={https://mediatum.ub.tum.de/604993?query=widmann+sebastian&show_id=1712519&srcnodeid=604993},
+}
+```
+
 ## 2. Running the nacaFOAM pipeline
 
 ### 2.1 Dependencies
