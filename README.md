@@ -30,7 +30,7 @@ The full publication of the *airfoilMNIST* dataset can be accessed through the m
 
 To reference the corresponding dataset, cite the dataset as:
 ```
-@misc{widmann2023nacaFOAM,
+@misc{widmann2023airfoilMNIST,
   title={AirfoilMNIST: A Large-Scale Dataset based on Two-Dimensional RANS Simulations of Airfoils},
   author={Widmann, Sebastian and Schlichter, Philipp and Reck, Michaela and Indinger, Thomas},
   year={2023},
